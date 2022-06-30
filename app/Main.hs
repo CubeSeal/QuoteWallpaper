@@ -1,7 +1,7 @@
 module Main where
 
-import qualified QuoteWallpaper
+import qualified Quotewallpaper
 
 main :: IO ()
 main = do
- QuoteWallpaper.main
+ Quotewallpaper.main

@@ -22,17 +22,19 @@ maintainer:         kenndesilva1@gmail.com
 extra-source-files: CHANGELOG.md
 
 library
-    exposed-modules:  QuoteWallpaper
+    exposed-modules:  Quotewallpaper
 
     -- Modules included in this library but not exported.
-    -- other-modules:
+    other-modules:    Wallpaper,
+                      Clippings
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    base ^>=4.14.3.0,
                       text,
                       time,
-                      process
+                      process,
+                      req
     hs-source-dirs:   src
     default-language: Haskell2010
 
