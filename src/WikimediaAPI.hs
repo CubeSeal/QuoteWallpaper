@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module WikimediaAPI (fetchPOTD) where
+module WikimediaAPI (fetchPOTD, URL) where
 
 import Network.HTTP.Req
     ( (/:),
@@ -16,7 +16,7 @@ import Network.HTTP.Req
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import qualified Data.Aeson as H ( Value (..))
 import qualified Data.Aeson.KeyMap as H (lookup)
-import Data.Vector
+import Data.Vector ( (!?) )
 import Data.Time.Format ()
 import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.Time.Clock (getCurrentTime, UTCTime (utctDay))
@@ -27,7 +27,7 @@ import Data.Bits (Bits(xor))
 type FileName = T.Text
 type URL = T.Text
 
-fetchPOTD :: IO ()
+fetchPOTD :: IO URL
 fetchPOTD = do
   date <- T.pack <$> getISODate
   runReq defaultHttpConfig $ do
@@ -43,7 +43,9 @@ fetchPOTD = do
     let imgSrc = fromMaybe undefined $ parseFileName $ responseBody bs
     bs2 <- liftIO $ fetchImageSrc imgSrc url
     let imgUrl = fromMaybe undefined $ parseURL $ responseBody bs2
-    liftIO $ print imgUrl
+    liftIO $ return imgUrl
+
+
 getISODate :: IO String
 getISODate =  iso8601Show . utctDay <$> getCurrentTime
 

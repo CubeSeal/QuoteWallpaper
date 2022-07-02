@@ -5,7 +5,8 @@ module Wallpaper where
 
 -- Modules
 import Clippings ( Quote(Quote, author, book, quote) )
-import Data.Text.Lazy as T ( unpack )
+import WikimediaAPI ( URL )
+import Data.Text.Lazy as T ( unpack, fromStrict )
 import System.Process (callProcess, readProcess)
 
 -- Set Wallpaper
@@ -41,5 +42,12 @@ createImageFile Quote { author = a
     , outDir ]
   return outDir
   where
-    picDir = "/home/landseal/.cache/plasma_engine_potd/wcpotd"
-    outDir = "./test.jpeg"
+    picDir = "./in.jpeg"
+    outDir = "./out.jpeg"
+
+-- Download image file
+downloadImageFile :: URL -> IO ()
+downloadImageFile url = do
+  callProcess "wget"
+    [ "--output-document=./in.jpeg"
+    , (T.unpack . T.fromStrict) url ]
