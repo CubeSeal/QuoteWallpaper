@@ -1,23 +1,31 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Wallpaper where
+module BashImg
+  ( setWallpaper
+  , createImageFile
+  , downloadImageFile ) where
 
 -- Modules
-import Clippings ( Quote(Quote, author, book, quote) )
-import WikimediaAPI ( URL )
-import Data.Text.Lazy as T ( unpack, fromStrict )
 import System.Process (callProcess, readProcess)
+
+import qualified Clippings as C
+  ( Quote ( Quote
+          , author
+          , book
+          , quote ) )
+import qualified WikimediaAPI as W ( URL )
+import qualified Data.Text.Lazy as T ( unpack, fromStrict )
 
 -- Set Wallpaper
 setWallpaper :: FilePath -> IO ()
 setWallpaper fp = callProcess "plasma-apply-wallpaperimage" [fp]
 
 -- Make image file
-createImageFile :: Quote -> IO FilePath
-createImageFile Quote { author = a
-                      , book   = b
-                      , quote  = q } = do
+createImageFile :: C.Quote -> IO FilePath
+createImageFile C.Quote { C.author = a
+                        , C.book   = b
+                        , C.quote  = q } = do
   let printTxt = q <> " - " <> a <> " (" <> b <> ")" <> "\n"
   formatQuote <- readProcess "fold" ["-s"] $ T.unpack printTxt
   callProcess "convert"
@@ -42,12 +50,12 @@ createImageFile Quote { author = a
     , outDir ]
   return outDir
   where
-    picDir = "./in.jpeg"
-    outDir = "./out.jpeg"
+    picDir = "./in.jpg"
+    outDir = "./out.jpg"
 
 -- Download image file
-downloadImageFile :: URL -> IO ()
+downloadImageFile :: W.URL -> IO ()
 downloadImageFile url = do
   callProcess "wget"
-    [ "--output-document=./in.jpeg"
+    [ "--output-document=./in.jpg"
     , (T.unpack . T.fromStrict) url ]

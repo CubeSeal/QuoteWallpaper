@@ -2,31 +2,35 @@
 
 module WikimediaAPI (fetchPOTD, URL) where
 
+-- Modules
 import Network.HTTP.Req
-    ( (/:),
-      (=:),
-      defaultHttpConfig,
-      https,
-      jsonResponse,
-      req,
-      responseBody,
-      runReq,
-      GET(GET),
-      NoReqBody(NoReqBody), Url, Scheme (Https), JsonResponse )
+  ( (/:)
+  , (=:)
+  , defaultHttpConfig
+  , https
+  , jsonResponse
+  , req
+  , responseBody
+  , runReq
+  , GET(GET)
+  , NoReqBody(NoReqBody)
+  , Url
+  , JsonResponse )
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
-import qualified Data.Aeson as H ( Value (..))
-import qualified Data.Aeson.KeyMap as H (lookup)
 import Data.Vector ( (!?) )
-import Data.Time.Format ()
-import Data.Time.Format.ISO8601 (iso8601Show)
-import Data.Time.Clock (getCurrentTime, UTCTime (utctDay))
-import qualified Data.Text as T
 import Data.Maybe (fromMaybe)
-import Data.Bits (Bits(xor))
 
+import qualified Data.Aeson as H ( Value (..), Key)
+import qualified Data.Aeson.KeyMap as H (lookup)
+import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
+import qualified Data.Time.Clock as C (getCurrentTime, UTCTime (utctDay))
+import qualified Data.Text as T
+
+-- Types
 type FileName = T.Text
 type URL = T.Text
 
+-- Functions
 fetchPOTD :: IO URL
 fetchPOTD = do
   date <- T.pack <$> getISODate
@@ -45,9 +49,8 @@ fetchPOTD = do
     let imgUrl = fromMaybe undefined $ parseURL $ responseBody bs2
     liftIO $ return imgUrl
 
-
 getISODate :: IO String
-getISODate =  iso8601Show . utctDay <$> getCurrentTime
+getISODate =  C.iso8601Show . C.utctDay <$> C.getCurrentTime
 
 parseFileName :: H.Value -> Maybe T.Text
 parseFileName x = do
@@ -58,11 +61,6 @@ parseFileName x = do
           arrayExtract 0 >>=
             objExtract "title"
   return filename
-  where
-    objExtract key (H.Object x) = H.lookup key x
-    objExtract _ _ = Nothing
-    arrayExtract index (H.Array x) = x !? index
-    arrayExtract _ _ = Nothing
 
 fetchImageSrc :: FileName -> Url a -> IO (JsonResponse H.Value)
 fetchImageSrc f url = runReq defaultHttpConfig $ do
@@ -83,8 +81,11 @@ parseURL x = do
           arrayExtract 0 >>=
             objExtract "url"
   return url
-  where
-    objExtract key (H.Object x) = H.lookup key x
-    objExtract _ _ = Nothing
-    arrayExtract index (H.Array x) = x !? index
-    arrayExtract _ _ = Nothing
+
+objExtract :: H.Key -> H.Value -> Maybe H.Value
+objExtract key (H.Object x) = H.lookup key x
+objExtract _ _ = Nothing
+
+arrayExtract :: Int -> H.Value -> Maybe H.Value
+arrayExtract index (H.Array x) = x !? index
+arrayExtract _ _ = Nothing

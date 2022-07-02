@@ -1,12 +1,18 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Clippings (NoteType, Quote (..), rawToQuotes) where
+module Clippings
+  ( NoteType
+  , Quote (..)
+  , rawToQuotes ) where
 
 -- Modules
-import qualified Data.Text.Lazy as T
 import Data.Maybe (mapMaybe)
-import Data.Char (isLetter, isPunctuation)
+import Data.Char
+  ( isLetter
+  , isPunctuation )
+
+import qualified Data.Text.Lazy as T
 
 -- Some useful datatypes
 data NoteType = Note | Highlight
@@ -22,14 +28,14 @@ data Quote = Quote
   -- Get Valid Quotes from Raw file data
 rawToQuotes :: T.Text -> [Quote]
 rawToQuotes = filter filterQuote
-  . mapMaybe getQuote
+  . mapMaybe parseRawQuote
   . T.splitOn delim
   where
     delim = "=========="
 
 -- Parse Quote
-getQuote :: T.Text -> Maybe Quote
-getQuote str = do
+parseRawQuote :: T.Text -> Maybe Quote
+parseRawQuote str = do
   let ls = T.lines $ T.dropWhile isNewline str
   fstLine  <- safeHead ls
   sndLine  <- safeTail ls >>= safeHead
@@ -42,9 +48,9 @@ getQuote str = do
   where
     -- A blight on the language smh.
     safeHead []     = Nothing
-    safeHead (a:as) = Just a
+    safeHead (a:_)  = Just a
     safeTail []     = Nothing
-    safeTail (a:as) = Just as
+    safeTail (_:as) = Just as
     safeLast []     = Nothing
     safeLast x      = Just $ last x
 
@@ -52,13 +58,12 @@ getNoteType :: T.Text -> NoteType
 getNoteType txt = if "Your Note" `T.isInfixOf` txt then Note else Highlight
 
 getAuthor :: T.Text -> T.Text
-getAuthor str = convertAuthor
+getAuthor = convertAuthor
   . dropSideNonLetters
   . snd
   . T.breakOnEnd "("
-  $ str
   where
-    convertAuthor str = case T.breakOn ", " str of
+    convertAuthor str' = case T.breakOn ", " str' of
       (x, y) -> dropSideNonLetters $ y <> " " <> x
 
 dropSideNonLetters :: T.Text -> T.Text

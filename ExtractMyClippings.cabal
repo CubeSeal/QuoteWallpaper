@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               ExtractMyClippings
+name:               Quotewallpaper
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
@@ -21,11 +21,16 @@ maintainer:         kenndesilva1@gmail.com
 -- category:
 extra-source-files: CHANGELOG.md
 
+common optimisation
+    default-language: Haskell2010
+    ghc-options:      -Wall -O2
+
 library
+    import:           optimisation
     exposed-modules:  Quotewallpaper
 
     -- Modules included in this library but not exported.
-    other-modules:    Wallpaper,
+    other-modules:    BashImg,
                       Clippings,
                       WikimediaAPI
 
@@ -41,7 +46,8 @@ library
     hs-source-dirs:   src
     default-language: Haskell2010
 
-executable ExtractMyClippings
+executable Quotewallpaper
+    import:           optimisation
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
@@ -51,7 +57,7 @@ executable ExtractMyClippings
     -- other-extensions:
     build-depends:
         base ^>=4.14.3.0,
-        ExtractMyClippings
+        Quotewallpaper
 
     hs-source-dirs:   app
     default-language: Haskell2010
