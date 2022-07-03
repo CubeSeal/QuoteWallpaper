@@ -7,6 +7,7 @@ module Clippings
   , rawToQuotes ) where
 
 -- Modules
+import UsefulFunctions ( safeHead, safeTail, safeLast )
 import Data.Maybe (mapMaybe)
 import Data.Char
   ( isLetter
@@ -45,14 +46,6 @@ parseRawQuote str = do
             , book      = getBook fstLine
             , noteType  = getNoteType sndLine
             , quote     = getQuote }
-  where
-    -- A blight on the language smh.
-    safeHead []     = Nothing
-    safeHead (a:_)  = Just a
-    safeTail []     = Nothing
-    safeTail (_:as) = Just as
-    safeLast []     = Nothing
-    safeLast x      = Just $ last x
 
 getNoteType :: T.Text -> NoteType
 getNoteType txt = if "Your Note" `T.isInfixOf` txt then Note else Highlight
