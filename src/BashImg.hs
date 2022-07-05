@@ -1,4 +1,3 @@
-
 {-# LANGUAGE OverloadedStrings #-}
 
 module BashImg
@@ -8,6 +7,7 @@ module BashImg
 
 -- Modules
 import System.Process (callProcess, readProcess)
+import UsefulFunctions ( getISODate )
 
 import qualified Clippings as C
   ( Quote ( Quote
@@ -16,6 +16,7 @@ import qualified Clippings as C
           , quote ) )
 import qualified WikimediaAPI as W ( URL )
 import qualified Data.Text.Lazy as T ( unpack, fromStrict )
+import qualified System.Directory as D (doesFileExist)
 
 -- Set Wallpaper
 setWallpaper :: FilePath -> IO ()
@@ -26,17 +27,23 @@ createImageFile :: C.Quote -> IO FilePath
 createImageFile C.Quote { C.author = a
                         , C.book   = b
                         , C.quote  = q } = do
-  let printTxt = q <> " - " <> a <> " (" <> b <> ")" <> "\n"
-  formatQuote <- readProcess "fold" ["-s"] $ T.unpack printTxt
+  formatedQuote <- readProcess "fold" ["-s"] $ T.unpack q
+  date          <- getISODate
+  let picDir   = "./" ++ date ++ ".jpg"
+      printStr = formatedQuote
+               <> "\n\n\t— "
+               <> T.unpack a
+               <> " ("
+               <> T.unpack b
+               <> ")"
+               <> "\n"
   callProcess "convert"
     [ "-gravity"
     , "center"
     , "-resize"
     , "1920x1080^"
-    , "-blur"
-    , "0x5"
-    , "-weight"
-    , "10"
+    , "+sigmoidal-contrast"
+    , "3x0%"
     , "-family"
     , "EB Garamond"
     , "-fill"
@@ -45,17 +52,22 @@ createImageFile C.Quote { C.author = a
     , "50"
     , "-annotate"
     , "+0+0"
-    , formatQuote
+    , printStr
     , picDir
     , outDir ]
   return outDir
   where
-    picDir = "./in.jpg"
-    outDir = "./out.jpg"
+    outDir = "/home/landseal/Documents/QuoteWallpaper/out.jpg"
 
 -- Download image file
 downloadImageFile :: W.URL -> IO ()
 downloadImageFile url = do
-  callProcess "wget"
-    [ "--output-document=./in.jpg"
-    , (T.unpack . T.fromStrict) url ]
+  date <- getISODate
+  ind  <- D.doesFileExist $ date ++ ".jpg"
+  if ind
+    then
+      return ()
+    else
+      callProcess "wget"
+        [ "--output-document=/home/landseal/Documents/QuoteWallpaper/" ++ date ++ ".jpg"
+        , (T.unpack . T.fromStrict) url ]

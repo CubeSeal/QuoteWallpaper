@@ -1,4 +1,4 @@
-# Revision history for ExtractMyClippings
+# Revision history for QuoteWallpaper
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
