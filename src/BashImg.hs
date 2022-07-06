@@ -8,6 +8,7 @@ module BashImg
 -- Modules
 import System.Process (callProcess, readProcess)
 import UsefulFunctions ( getISODate )
+import Control.Monad.Reader ()
 
 import qualified Clippings as C
   ( Quote ( Quote
@@ -29,14 +30,14 @@ createImageFile C.Quote { C.author = a
                         , C.quote  = q } = do
   formatedQuote <- readProcess "fold" ["-s"] $ T.unpack q
   date          <- getISODate
-  let picDir   = "./" ++ date ++ ".jpg"
+  let picDir   = "/home/landseal/Documents/QuoteWallpaper/" ++ date ++ ".jpg"
       printStr = formatedQuote
-               <> "\n\n\t— "
-               <> T.unpack a
-               <> " ("
-               <> T.unpack b
-               <> ")"
-               <> "\n"
+        <> "\n\n\t— "
+        <> T.unpack a
+        <> " ("
+        <> T.unpack b
+        <> ")"
+        <> "\n"
   callProcess "convert"
     [ "-gravity"
     , "center"
@@ -63,7 +64,7 @@ createImageFile C.Quote { C.author = a
 downloadImageFile :: W.URL -> IO ()
 downloadImageFile url = do
   date <- getISODate
-  ind  <- D.doesFileExist $ date ++ ".jpg"
+  ind  <- D.doesFileExist $ "/home/landseal/Documents/QuoteWallpaper/" ++ date ++ ".jpg"
   if ind
     then
       return ()

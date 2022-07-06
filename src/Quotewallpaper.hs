@@ -15,7 +15,7 @@ import qualified System.Random as R (uniformR, initStdGen)
 
 main :: IO ()
 main = do
-  quotes <- C.rawToQuotes . T.pack <$> readFile "./My Clippings.txt"
+  quotes <- C.rawToQuotes . T.pack <$> readFile "/home/landseal/Documents/QuoteWallpaper/My Clippings.txt"
   stdGen <- R.initStdGen
   let (ranNum, _) = R.uniformR (0, length quotes - 1) stdGen
   -- This should be safe.
