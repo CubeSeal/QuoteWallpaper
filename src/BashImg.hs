@@ -9,6 +9,7 @@ module BashImg
 import System.Process (callProcess, readProcess)
 import UsefulFunctions ( getISODate )
 import Control.Monad.Reader (ReaderT, MonadReader (ask), MonadIO (liftIO))
+import Data.List ( isInfixOf )
 
 import qualified Clippings as C
   ( Quote ( Quote
@@ -17,13 +18,26 @@ import qualified Clippings as C
           , quote ) )
 import qualified WikimediaAPI as W ( URL, fetchPOTD )
 import qualified Data.Text.Lazy as T ( unpack, fromStrict )
-import qualified System.Directory as D (doesFileExist)
+import qualified System.Directory as D (doesFileExist, listDirectory, removeFile)
 
 createImageFile :: C.Quote -> ReaderT FilePath IO FilePath
 createImageFile quote = do
+  cleanDir
   url <- liftIO W.fetchPOTD
   rawImgFilePath  <- downloadImageFile url
   makeImageFile rawImgFilePath quote
+
+cleanDir :: ReaderT FilePath IO ()
+cleanDir = do
+  dir <- ask
+  listOfFiles <- liftIO $ D.listDirectory dir
+  date <- liftIO getISODate
+  let p x = isInfixOf "jpg" x && not (isInfixOf date x)
+      oldFiles = map (dir ++) . filter p $ listOfFiles
+      f x = liftIO $ do
+        D.removeFile x
+        putStrLn $ "Removed: " ++ x
+  mapM_ f oldFiles
 
 -- Set Wallpaper
 setWallpaper :: FilePath -> ReaderT FilePath IO ()
