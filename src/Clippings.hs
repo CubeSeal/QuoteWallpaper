@@ -6,12 +6,17 @@ module Clippings
   , rawToQuotes ) where
 
 -- Modules
-import UsefulFunctions ( safeHead, safeTail, safeLast )
 import Data.Maybe (mapMaybe)
 import Data.Char
   ( isLetter
-  , isPunctuation )
+  , isPunctuation
+  )
 
+import UsefulFunctions
+  ( (!?)
+  , safeLast
+  )
+  
 import qualified Data.Text.Lazy as T
 
 -- Some useful datatypes
@@ -37,8 +42,8 @@ rawToQuotes = filter filterQuote
 parseRawQuote :: T.Text -> Maybe Quote
 parseRawQuote str = do
   let ls = T.lines $ T.dropWhile isNewline str
-  fstLine  <- safeHead ls
-  sndLine  <- safeTail ls >>= safeHead
+  fstLine  <- ls !? 0
+  sndLine  <- ls !? 1
   getQuote <- T.dropAround isNewline <$> safeLast ls
   return
     $ Quote { author    = getAuthor fstLine

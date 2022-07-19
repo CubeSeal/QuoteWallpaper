@@ -3,6 +3,9 @@
 module WikimediaAPI (fetchPOTD, URL) where
 
 -- Modules
+import Control.Monad.IO.Class ( MonadIO(liftIO) )
+import Data.Vector ( (!?) )
+import Data.Maybe (fromMaybe)
 import Network.HTTP.Req
   ( (/:)
   , (=:)
@@ -15,14 +18,13 @@ import Network.HTTP.Req
   , GET(GET)
   , NoReqBody(NoReqBody)
   , Url
-  , JsonResponse )
-import UsefulFunctions ( safeHead, getISODate )
-import Control.Monad.IO.Class ( MonadIO(liftIO) )
-import Data.Vector ( (!?) )
-import Data.Maybe (fromMaybe)
+  , JsonResponse
+  )
 
-import qualified Data.Aeson as H ( Value (..), Key)
-import qualified Data.Aeson.KeyMap as H ( lookup, elems )
+import UsefulFunctions ( safeHead, getISODate )
+
+import qualified Data.Aeson as H
+import qualified Data.Aeson.KeyMap as H
 import qualified Data.Text as T
 
 -- Types
@@ -43,11 +45,11 @@ fetchPOTD = do
                "prop"          =: ("images" :: T.Text)  <>
                "titles"        =: title
       url = https "commons.wikimedia.org" /: "w" /: "api.php"
-    bs <- req GET url NoReqBody jsonResponse params
-    let imgSrc = fromMaybe undefined $ parseFileName $ responseBody bs
+    _jsonResponse1 <- req GET url NoReqBody jsonResponse params
+    let imgSrc = fromMaybe undefined $ parseFileName $ responseBody _jsonResponse1
 
-    bs2 <- liftIO $ fetchImageSrc imgSrc url
-    let imgUrl = fromMaybe undefined $ parseURL $ responseBody bs2
+    _jsonResponse2 <- liftIO $ fetchImageSrc imgSrc url
+    let imgUrl = fromMaybe undefined $ parseURL $ responseBody _jsonResponse2
     
     liftIO $ return imgUrl
 

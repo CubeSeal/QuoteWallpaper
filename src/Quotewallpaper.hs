@@ -5,15 +5,17 @@ module Quotewallpaper where
 
 -- Modules
 import Control.Monad.Reader (ReaderT(runReaderT))
+import Data.Maybe (fromMaybe)
 
-import qualified Clippings as C ( rawToQuotes, Quote )
-import qualified BashImg as B
-  ( createImageFile
-  , setWallpaper
-  )
+import UsefulFunctions ((!?))
+
 import qualified Data.Text.Lazy as T
-import qualified System.Random as R (uniformR, initStdGen)
-import qualified System.Directory as D (getAppUserDataDirectory, createDirectoryIfMissing)
+import qualified System.Random as R
+import qualified System.Directory as D
+
+import qualified Clippings as C
+import qualified BashImg as B
+
 
 main :: IO ()
 main = do
@@ -35,6 +37,8 @@ substantiateDir dirname = do
 getRanQuote :: [C.Quote] -> IO C.Quote
 getRanQuote quotes = do
   stdGen <- R.initStdGen
-  let (ranNum, _) = R.uniformR (0, length quotes - 1) stdGen
-  -- This should be safe.
-  return $ quotes !! ranNum
+  let
+    (ranNum, _) = R.uniformR (0, length quotes - 1) stdGen
+    -- This should be safe.
+    ranQuote    = fromMaybe undefined $ quotes !? ranNum
+  return ranQuote
