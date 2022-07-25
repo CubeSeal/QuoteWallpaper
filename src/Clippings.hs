@@ -81,8 +81,9 @@ filterQuote :: Quote -> Bool
 filterQuote Quote { author = a
                   , quote = q
                   , noteType = n } =
-  p1 && p2 && p3
+  p1 && p2 && p3 && p4
   where
     p1 = n == Highlight
     p2 = maybe False (isPunctuation . snd) $ T.unsnoc q
     p3 = "Kenneth" `notElem` T.words a
+    p4 = length (T.words q) > 1
