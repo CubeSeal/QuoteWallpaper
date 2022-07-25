@@ -10,11 +10,12 @@ import Data.Maybe (fromMaybe)
 import UsefulFunctions ((!?))
 
 import qualified Data.Text.Lazy as T
-import qualified System.Random as R
 import qualified System.Directory as D
 
 import qualified Clippings as C
 import qualified BashImg as B
+import qualified Data.Time.Calendar.OrdinalDate as DT
+import qualified Data.Time as CL
 
 
 main :: IO ()
@@ -36,9 +37,9 @@ substantiateDir dirname = do
 
 getRanQuote :: [C.Quote] -> IO C.Quote
 getRanQuote quotes = do
-  stdGen <- R.initStdGen
+  (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
   let
-    (ranNum, _) = R.uniformR (0, length quotes - 1) stdGen
+    ranNum = (fromInteger yearNum + dayNum) `mod` length quotes
     -- This should be safe.
-    ranQuote    = fromMaybe undefined $ quotes !? ranNum
+    ranQuote = fromMaybe undefined $ quotes !? ranNum
   return ranQuote
