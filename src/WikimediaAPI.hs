@@ -39,12 +39,13 @@ fetchPOTD = do
   runReq defaultHttpConfig $ do
     let
       title  = "Template:Potd/" <> date <> " (en)"
-      params = "action"        =: ("query"  :: T.Text)  <>
-               "format"        =: ("json"   :: T.Text)  <>
-               "formatversion" =: ("2"      :: T.Text)  <>
-               "prop"          =: ("images" :: T.Text)  <>
-               "titles"        =: title
-      url = https "commons.wikimedia.org" /: "w" /: "api.php"
+      params =  "action"        =: ("query"  :: T.Text)
+             <> "format"        =: ("json"   :: T.Text) 
+             <> "formatversion" =: ("2"      :: T.Text)
+             <> "prop"          =: ("images" :: T.Text)
+             <> "titles"        =: title
+      url    = https "commons.wikimedia.org" /: "w" /: "api.php"
+
     _jsonResponse1 <- req GET url NoReqBody jsonResponse params
     let imgSrc = fromMaybe undefined $ parseFileName $ responseBody _jsonResponse1
 
@@ -56,24 +57,24 @@ fetchPOTD = do
 -- Drop down JSON Object to extract filename
 parseFileName :: H.Value -> Maybe T.Text
 parseFileName x = do
-  (H.String filename)    <-
-    objExtract "query" x >>=
-    objExtract "pages"   >>=
-    arrayExtract 0       >>=
-    objExtract "images"  >>=
-    arrayExtract 0       >>=
-    objExtract "title"
+  (H.String filename)
+    <-  objExtract "query" x
+    >>= objExtract "pages"  
+    >>= arrayExtract 0       
+    >>= objExtract "images"  
+    >>= arrayExtract 0       
+    >>= objExtract "title"
   return filename
 
 -- Make another request to Wikimedia API for file URL
 fetchImageSrc :: FileName -> Url a -> IO (JsonResponse H.Value)
 fetchImageSrc f url = runReq defaultHttpConfig $ do
   let
-    params = "action" =: ("query"     :: T.Text)  <>
-             "format" =: ("json"      :: T.Text)  <>
-             "prop"   =: ("imageinfo" :: T.Text)  <>
-             "iiprop" =: ("url"       :: T.Text)  <>
-             "titles" =: f
+    params =  "action" =: ("query"     :: T.Text)
+           <> "format" =: ("json"      :: T.Text)
+           <> "prop"   =: ("imageinfo" :: T.Text)
+           <> "iiprop" =: ("url"       :: T.Text)
+           <> "titles" =: f
   req GET url NoReqBody jsonResponse params
 
 -- Drop down the JSON object to extract url
