@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module BashImg
+module Commands.KDE
   ( setWallpaper
   , createImageFile
   , downloadImageFile

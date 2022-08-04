@@ -13,7 +13,7 @@ import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
 
 import qualified Clippings as C
-import qualified BashImg as B
+import qualified Commands as CMD
 import qualified Data.Time.Calendar.OrdinalDate as DT
 import qualified Data.Time as CL
 
@@ -26,8 +26,8 @@ main = do
     <$> readFile (dir ++ "My Clippings.txt")
   ranQuote <- getRanQuote quotes
   flip runReaderT dir $ do
-    imgFile <- B.createImageFile ranQuote
-    B.setWallpaper imgFile
+    imgFile <- CMD.createImageFile ranQuote
+    CMD.setWallpaper imgFile
 
 substantiateDir :: FilePath -> IO FilePath
 substantiateDir dirname = do

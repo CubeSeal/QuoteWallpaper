@@ -30,8 +30,10 @@ library
     exposed-modules:  Quotewallpaper
 
     -- Modules included in this library but not exported.
-    other-modules:    BashImg,
-                      Clippings,
+    other-modules:    Clippings,
+                      Commands,
+                      Commands.KDE,
+                      Commands.Windows,
                       WikimediaAPI,
                       UsefulFunctions
 
