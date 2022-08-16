@@ -32,6 +32,7 @@ library
     -- Modules included in this library but not exported.
     other-modules:    Clippings,
                       Commands,
+                      Commands.Common,
                       Commands.KDE,
                       Commands.Windows,
                       WikimediaAPI,
