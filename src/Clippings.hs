@@ -85,5 +85,5 @@ filterQuote Quote { author = a
   where
     p1 = n == Highlight
     p2 = maybe False (isPunctuation . snd) $ T.unsnoc q
-    p3 = "Kenneth" `notElem` T.words a
+    p3 = all (`notElem` T.words a) ["Kenneth", "Fred"]
     p4 = length (T.words q) > 1
