@@ -7,7 +7,7 @@ module Commands.KDE
   ) where
 
 -- Modules
-import System.Process (callProcess, readProcess)
+import System.Process (callProcess)
 import Control.Monad.Reader
   ( ReaderT
   , MonadReader (ask)
@@ -18,12 +18,12 @@ import qualified Data.Text.Lazy as T
 
 import qualified Clippings as C
 import qualified WikimediaAPI as W
-import qualified Commands.Common as CMD
+import qualified Commands.Common as COM
 
 
 createImageFile :: C.Quote -> W.URL -> ReaderT FilePath IO FilePath
 createImageFile quote url = do
-  rawImgFilePath <- CMD.downloadImageFile "--output-document=" url
+  rawImgFilePath <- COM.downloadImageFile "--output-document=" url
   makeImageFile rawImgFilePath quote
 
 -- Set Wallpaper
@@ -36,13 +36,13 @@ setWallpaper fp = do
 -- Make image file
 makeImageFile :: FilePath -> C.Quote -> ReaderT FilePath IO FilePath
 makeImageFile inImgFile C.Quote {..} = do
-  formatedQuote <- liftIO $ readProcess "fold" ["-s"] $ T.unpack quote
   dir <- ask
   let
+    formattedQuote = COM.foldLines 80 $ T.unpack quote
     picDir   = dir ++ inImgFile
     outFile  = "out.jpg"
     outDir   = dir ++ outFile
-    printStr = formatedQuote
+    printStr = formattedQuote
       ++ "\n\n\t— "
       ++ T.unpack author
       ++ " ("

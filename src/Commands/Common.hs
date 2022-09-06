@@ -1,5 +1,7 @@
 module Commands.Common
- (downloadImageFile) where
+ ( downloadImageFile
+ , foldLines
+ ) where
 
 import Control.Monad.Reader
   ( ReaderT
@@ -35,3 +37,25 @@ downloadImageFile command url = do
         , (T.unpack . T.fromStrict) url
         ]
       return imgFile
+
+-- Truncate Quote so it fits on-screen
+foldLines :: Int -> String -> String
+foldLines lineLimit str = go str 0
+  where
+    -- Main recursive function that goes through string.
+    go :: String -> Int -> String
+    go [] _ = []
+    go (x:xs) i
+      | i == lineLimit = x : '\n' : go xs 0
+      | x == ' ' = if p xs i
+        then '\n' : go xs 0
+        else x : go xs (i + 1)
+      | x == '\n' = x : go xs 0
+      | otherwise = x : go xs (i + 1)
+    -- Look ahead predicate to see if space is 'last' before 80 line limit is reached.
+    p :: String -> Int -> Bool
+    p [] _ = False
+    p (l:ls) i'
+      | i' == lineLimit = True
+      | l == ' ' = False
+      | otherwise = p ls (i' + 1)
