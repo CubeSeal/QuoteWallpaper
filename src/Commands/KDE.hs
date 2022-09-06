@@ -38,11 +38,10 @@ makeImageFile :: FilePath -> C.Quote -> ReaderT FilePath IO FilePath
 makeImageFile inImgFile C.Quote {..} = do
   dir <- ask
   let
-    formattedQuote = COM.foldLines 80 $ T.unpack quote
     picDir   = dir ++ inImgFile
     outFile  = "out.jpg"
     outDir   = dir ++ outFile
-    printStr = formattedQuote
+    printStr = T.unpack quote
       ++ "\n\n\t— "
       ++ T.unpack author
       ++ " ("

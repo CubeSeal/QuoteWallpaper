@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Commands
   ( createImageFile
@@ -11,7 +12,7 @@ import Control.Monad.Reader
   , MonadIO (liftIO)
   )
 
-import Clippings (Quote)
+import Clippings (Quote (..))
 import UsefulFunctions (getISODate)
 import Data.List (isInfixOf)
 
@@ -21,14 +22,21 @@ import qualified System.Info as I
 import qualified Commands.KDE as KDE
 import qualified Commands.Windows as WIN
 import qualified WikimediaAPI as W
+import qualified Data.Text.Lazy as T
 
 createImageFile :: Quote -> ReaderT FilePath IO FilePath
 createImageFile quote = do
   cleanDir
   url <- liftIO W.fetchPOTD
+  let formattedQuote = formatQuote quote
   if I.os == "mingw32"
-    then WIN.createImageFile quote url
-    else KDE.createImageFile quote url
+    then WIN.createImageFile formattedQuote url
+    else KDE.createImageFile formattedQuote url
+
+setWallpaper :: FilePath -> ReaderT FilePath IO ()
+setWallpaper q = if I.os == "mingw32"
+  then undefined
+  else KDE.setWallpaper q
 
 cleanDir :: ReaderT FilePath IO ()
 cleanDir = do
@@ -44,7 +52,28 @@ cleanDir = do
         putStrLn $ "Removed: " ++ x
   mapM_ f oldFiles
 
-setWallpaper :: FilePath -> ReaderT FilePath IO ()
-setWallpaper q = if I.os == "mingw32"
-  then undefined
-  else KDE.setWallpaper q
+formatQuote :: Quote -> Quote
+formatQuote Quote {..} = Quote author book noteType formattedQuote
+  where
+    formattedQuote = T.pack $ foldLines 80 $ T.unpack quote
+-- Truncate Quote so it fits on-screen
+foldLines :: Int -> String -> String
+foldLines lineLimit str = go str 0
+  where
+    -- Main recursive function that goes through string.
+    go :: String -> Int -> String
+    go [] _ = []
+    go (x:xs) i
+      | i == lineLimit = x : '\n' : go xs 0
+      | x == '\n'      = x : go xs 0
+      | x == ' '       = if p xs i
+        then '\n' : go xs 0
+        else x : go xs (i + 1)
+      | otherwise      = x : go xs (i + 1)
+    -- Look ahead predicate to see if space is 'last' before 80 line limit is reached.
+    p :: String -> Int -> Bool
+    p [] _ = False
+    p (l:ls) i'
+      | i' == lineLimit = True
+      | l == ' '        = False
+      | otherwise       = p ls (i' + 1)
