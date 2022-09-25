@@ -11,6 +11,7 @@ import UsefulFunctions ((!?))
 
 import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
+import qualified System.Random as R
 
 import qualified Clippings as C
 import qualified Commands as CMD
@@ -39,7 +40,10 @@ getRanQuote :: [C.Quote] -> IO C.Quote
 getRanQuote quotes = do
   (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
   let
-    ranNum = (fromInteger yearNum + dayNum) `mod` length quotes
+    -- Seed that is unique per day.
+    lenQuote = length quotes
+    dailySeed = (fromInteger yearNum + dayNum) `mod` lenQuote
+    (ranNum, _) = R.uniformR (0, lenQuote - 1) $ R.mkStdGen dailySeed
     -- This should be safe.
     ranQuote = fromMaybe undefined $ quotes !? ranNum
   return ranQuote
