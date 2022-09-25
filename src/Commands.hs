@@ -55,10 +55,11 @@ cleanDir = do
 formatQuote :: Quote -> Quote
 formatQuote Quote {..} = Quote author book noteType formattedQuote
   where
-    formattedQuote = T.pack $ foldLines 80 $ T.unpack quote
+    formattedQuote = foldLines 80 quote
+
 -- Truncate Quote so it fits on-screen
-foldLines :: Int -> String -> String
-foldLines lineLimit str = go str 0
+foldLines :: Int -> T.Text -> T.Text
+foldLines lineLimit str = T.pack $ go (T.unpack str) 0
   where
     -- Main recursive function that goes through string.
     go :: String -> Int -> String
