@@ -12,7 +12,7 @@ import Control.Monad.Reader
   , MonadIO (liftIO)
   )
 
-import Clippings (Quote (..))
+import Clippings (AnnotatedQuote (..))
 import UsefulFunctions (getISODate)
 import Data.List (isInfixOf)
 
@@ -24,7 +24,7 @@ import qualified Commands.Windows as WIN
 import qualified WikimediaAPI as W
 import qualified Data.Text.Lazy as T
 
-createImageFile :: Quote -> ReaderT FilePath IO FilePath
+createImageFile :: AnnotatedQuote -> ReaderT FilePath IO FilePath
 createImageFile quote = do
   cleanDir
   url <- liftIO W.fetchPOTD
@@ -52,10 +52,11 @@ cleanDir = do
         putStrLn $ "Removed: " ++ x
   mapM_ f oldFiles
 
-formatQuote :: Quote -> Quote
-formatQuote Quote {..} = Quote author book noteType formattedQuote
+formatQuote :: AnnotatedQuote -> AnnotatedQuote
+formatQuote AQuote {..} = AQuote aAuthor aBook formattedQuote formattedNote
   where
-    formattedQuote = foldLines 80 quote
+    formattedQuote = foldLines 80 aQuote
+    formattedNote  = foldLines 80 <$> aNote
 
 -- Truncate Quote so it fits on-screen
 foldLines :: Int -> T.Text -> T.Text

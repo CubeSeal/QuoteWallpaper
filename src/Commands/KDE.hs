@@ -19,9 +19,10 @@ import qualified Data.Text.Lazy as T
 import qualified Clippings as C
 import qualified WikimediaAPI as W
 import qualified Commands.Common as COM
+import Data.Maybe (fromMaybe)
 
 
-createImageFile :: C.Quote -> W.URL -> ReaderT FilePath IO FilePath
+createImageFile :: C.AnnotatedQuote -> W.URL -> ReaderT FilePath IO FilePath
 createImageFile quote url = do
   rawImgFilePath <- COM.downloadImageFile "--output-document=" url
   makeImageFile rawImgFilePath quote
@@ -34,26 +35,29 @@ setWallpaper fp = do
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
 -- Make image file
-makeImageFile :: FilePath -> C.Quote -> ReaderT FilePath IO FilePath
-makeImageFile inImgFile C.Quote {..} = do
+makeImageFile :: FilePath -> C.AnnotatedQuote -> ReaderT FilePath IO FilePath
+makeImageFile inImgFile C.AQuote {..} = do
   dir <- ask
   let
     picDir   = dir ++ inImgFile
     outFile  = "out.jpg"
     outDir   = dir ++ outFile
-    printStr = T.unpack quote
+    quoteStr = T.unpack aQuote
       ++ "\n\n\t— "
-      ++ T.unpack author
+      ++ T.unpack aAuthor
       ++ " ("
-      ++ T.unpack book
+      ++ T.unpack aBook
       ++ ")"
       ++ "\n"
+    noteStr  = T.unpack $ fromMaybe "" aNote
   liftIO $ callProcess
     "convert"
     [ "-gravity"
     , "center"
     , "-resize"
     , "1920x1080^"
+    , "-extent"
+    , "1920x1080"
     , "+sigmoidal-contrast"
     , "3x0%"
     , "-blur"
@@ -66,7 +70,14 @@ makeImageFile inImgFile C.Quote {..} = do
     , "50"
     , "-annotate"
     , "+0+0"
-    , printStr
+    , quoteStr
+    , "-font"
+    , "EB-Garamond-08-Italic"
+    , "-gravity"
+    , "southeast"
+    , "-annotate"
+    , "+100+100"
+    , noteStr
     , picDir
     , outDir
     ]

@@ -11,13 +11,13 @@ import qualified Clippings as C
 import qualified Commands.Common as COM
 import qualified WikimediaAPI as W
 
-createImageFile :: C.Quote -> W.URL -> ReaderT FilePath IO FilePath
+createImageFile :: C.AnnotatedQuote -> W.URL -> ReaderT FilePath IO FilePath
 createImageFile quote url = do
   rawImgFilePath <- COM.downloadImageFile "-OutFile " url
   makeImageFile rawImgFilePath quote
 
-makeImageFile :: FilePath -> C.Quote -> ReaderT FilePath IO FilePath
-makeImageFile inImgFile C.Quote {..} = undefined
+makeImageFile :: FilePath -> C.AnnotatedQuote -> ReaderT FilePath IO FilePath
+makeImageFile inImgFile C.AQuote {..} = undefined
 
 setWallpaper :: FilePath -> ReaderT FilePath IO ()
 setWallpaper = undefined

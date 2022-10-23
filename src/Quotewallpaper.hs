@@ -22,7 +22,7 @@ import qualified Data.Time as CL
 main :: IO ()
 main = do
   dir    <- substantiateDir "quotewallpaper/"
-  quotes <- C.rawToQuotes
+  quotes <- C.rawToAQuotes
     . T.pack
     <$> readFile (dir ++ "My Clippings.txt")
   ranQuote <- getRanQuote quotes
@@ -36,7 +36,7 @@ substantiateDir dirname = do
   D.createDirectoryIfMissing True appDir
   return appDir
 
-getRanQuote :: [C.Quote] -> IO C.Quote
+getRanQuote :: [C.AnnotatedQuote] -> IO C.AnnotatedQuote
 getRanQuote quotes = do
   (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
   let
