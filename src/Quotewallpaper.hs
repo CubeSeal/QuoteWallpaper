@@ -4,6 +4,7 @@
 module Quotewallpaper where
 
 -- Modules
+import Control.Monad (unless)
 import Control.Monad.Reader (ReaderT(runReaderT))
 import Data.Maybe (fromMaybe)
 import System.Exit (exitSuccess)
@@ -34,7 +35,9 @@ main = do
 
   -- Download POTD file, add ran quote and set wallpaper.
   flip runReaderT dir $ do
-    imgFile <- CMD.createImageFile ranQuote
+    CMD.cleanDir
+    downloadedFile <- CMD.downloadImageFile
+    imgFile <- CMD.createImageFile downloadedFile ranQuote
     CMD.setWallpaper imgFile
 
 -- Create directory if not existing already.
@@ -48,9 +51,7 @@ substantiateDir dirname = do
 checkMyClippingsExists :: FilePath -> IO ()
 checkMyClippingsExists dir = do
   p <- D.doesFileExist $ dir ++ "My Clippings.txt"
-  if p
-    then return ()
-    else do
+  unless p $ do
       putStrLn $ "Add My Clipping.txt to " ++ dir
       exitSuccess
 

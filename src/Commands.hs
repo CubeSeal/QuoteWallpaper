@@ -2,7 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Commands
-  ( createImageFile
+  ( downloadImageFile
+  , cleanDir
+  , createImageFile
   , setWallpaper
   ) where
 
@@ -11,10 +13,12 @@ import Control.Monad.Reader
   , MonadReader (ask)
   , MonadIO (liftIO)
   )
+import Control.Monad (unless)
 
 import Clippings (AnnotatedQuote (..))
 import UsefulFunctions (getISODate)
 import Data.List (isInfixOf)
+import System.Process ( callProcess ) 
 
 import qualified System.Directory as D
 import qualified System.Info as I
@@ -24,20 +28,38 @@ import qualified Commands.Windows as WIN
 import qualified WikimediaAPI as W
 import qualified Data.Text.Lazy as T
 
-createImageFile :: AnnotatedQuote -> ReaderT FilePath IO FilePath
-createImageFile quote = do
-  cleanDir
-  url <- liftIO W.fetchPOTD
+-- Download image file
+downloadImageFile :: ReaderT FilePath IO FilePath
+downloadImageFile = do
+  date <- liftIO getISODate
+  dir  <- ask
+  let
+    command = if I.os == "mingw32" then "-OutFile" else "--output-document="
+    imgFile = date ++ ".jpg"
+    fullPathImgFile = dir ++ imgFile
+
+  doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
+  unless doesRawImgFileExist $ do
+    url <- liftIO W.fetchPOTD
+    liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack $ T.fromStrict url]
+
+  return imgFile
+
+-- Take downloaded file and add the quote to it.
+createImageFile :: FilePath -> AnnotatedQuote -> ReaderT FilePath IO FilePath
+createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
   if I.os == "mingw32"
-    then WIN.createImageFile formattedQuote url
-    else KDE.createImageFile formattedQuote url
+    then WIN.createImageFile inFile formattedQuote
+    else KDE.createImageFile inFile formattedQuote
 
+-- Set wallpaper
 setWallpaper :: FilePath -> ReaderT FilePath IO ()
 setWallpaper q = if I.os == "mingw32"
   then undefined
   else KDE.setWallpaper q
 
+-- Clean 
 cleanDir :: ReaderT FilePath IO ()
 cleanDir = do
   dir <- ask
@@ -68,9 +90,7 @@ foldLines lineLimit str = T.pack $ go (T.unpack str) 0
     go (x:xs) i
       | i == lineLimit = x : '\n' : go xs 0
       | x == '\n'      = x : go xs 0
-      | x == ' '       = if p xs i
-        then '\n' : go xs 0
-        else x : go xs (i + 1)
+      | x == ' '       = if p xs i then '\n' : go xs 0 else x : go xs (i + 1)
       | otherwise      = x : go xs (i + 1)
     -- Look ahead predicate to see if space is 'last' before 80 line limit is reached.
     p :: String -> Int -> Bool

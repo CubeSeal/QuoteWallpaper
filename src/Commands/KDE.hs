@@ -17,15 +17,7 @@ import Control.Monad.Reader
 import qualified Data.Text.Lazy as T
 
 import qualified Clippings as C
-import qualified WikimediaAPI as W
-import qualified Commands.Common as COM
 import Data.Maybe (fromMaybe)
-
-
-createImageFile :: C.AnnotatedQuote -> W.URL -> ReaderT FilePath IO FilePath
-createImageFile quote url = do
-  rawImgFilePath <- COM.downloadImageFile "--output-document=" url
-  makeImageFile rawImgFilePath quote
 
 -- Set Wallpaper
 setWallpaper :: FilePath -> ReaderT FilePath IO ()
@@ -35,8 +27,8 @@ setWallpaper fp = do
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
 -- Make image file
-makeImageFile :: FilePath -> C.AnnotatedQuote -> ReaderT FilePath IO FilePath
-makeImageFile inImgFile C.AQuote {..} = do
+createImageFile :: FilePath -> C.AnnotatedQuote -> ReaderT FilePath IO FilePath
+createImageFile inImgFile C.AQuote {..} = do
   dir <- ask
   let
     picDir   = dir ++ inImgFile
