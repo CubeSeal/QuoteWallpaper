@@ -5,6 +5,8 @@ module UsefulFunctions
   , safeLast
   , getISODate ) where
 
+import Control.Monad.IO.Class (MonadIO (liftIO))
+
 import qualified Data.Time.Clock as C (UTCTime (utctDay), getCurrentTime)
 import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
 
@@ -27,5 +29,5 @@ safeLast :: [a] -> Maybe a
 safeLast []     = Nothing
 safeLast x      = Just $ last x
 
-getISODate :: IO String
-getISODate =  C.iso8601Show . C.utctDay <$> C.getCurrentTime
+getISODate :: MonadIO m => m String
+getISODate =  liftIO $ C.iso8601Show . C.utctDay <$> C.getCurrentTime

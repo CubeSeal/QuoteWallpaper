@@ -3,7 +3,7 @@
 module WikimediaAPI (fetchPOTD, URL) where
 
 -- Modules
-import Control.Monad.IO.Class ( MonadIO(liftIO) )
+import Control.Monad.IO.Class ( MonadIO )
 import Data.Vector ( (!?) )
 import Data.Maybe (fromMaybe)
 import Network.HTTP.Req
@@ -19,6 +19,7 @@ import Network.HTTP.Req
   , NoReqBody(NoReqBody)
   , Url
   , JsonResponse
+  , Req
   )
 
 import UsefulFunctions ( safeHead, getISODate )
@@ -33,7 +34,7 @@ type URL      = T.Text
 
 -- Functions
 -- Make request to server for file name and then for url
-fetchPOTD :: IO URL
+fetchPOTD :: MonadIO m => m URL
 fetchPOTD = do
   date <- T.pack <$> getISODate
   runReq defaultHttpConfig $ do
@@ -49,10 +50,10 @@ fetchPOTD = do
     _jsonResponse1 <- req GET url NoReqBody jsonResponse params
     let imgSrc = fromMaybe undefined $ parseFileName $ responseBody _jsonResponse1
 
-    _jsonResponse2 <- liftIO $ fetchImageSrc imgSrc url
+    _jsonResponse2 <- fetchImageSrc imgSrc url
     let imgUrl = fromMaybe undefined $ parseURL $ responseBody _jsonResponse2
     
-    liftIO $ return imgUrl
+    return imgUrl
 
 -- Drop down JSON Object to extract filename
 parseFileName :: H.Value -> Maybe T.Text
@@ -67,8 +68,8 @@ parseFileName x = do
   return filename
 
 -- Make another request to Wikimedia API for file URL
-fetchImageSrc :: FileName -> Url a -> IO (JsonResponse H.Value)
-fetchImageSrc f url = runReq defaultHttpConfig $ do
+fetchImageSrc :: FileName -> Url a -> Req (JsonResponse H.Value)
+fetchImageSrc f url = do
   let
     params =  "action" =: ("query"     :: T.Text)
            <> "format" =: ("json"      :: T.Text)

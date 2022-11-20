@@ -31,7 +31,7 @@ import qualified Data.Text.Lazy as T
 -- Download image file
 downloadImageFile :: ReaderT FilePath IO FilePath
 downloadImageFile = do
-  date <- liftIO getISODate
+  date <- getISODate
   dir  <- ask
   let
     command = if I.os == "mingw32" then "-OutFile" else "--output-document="
@@ -40,7 +40,7 @@ downloadImageFile = do
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
   unless doesRawImgFileExist $ do
-    url <- liftIO W.fetchPOTD
+    url <- W.fetchPOTD
     liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack $ T.fromStrict url]
 
   return imgFile
@@ -64,7 +64,7 @@ cleanDir :: ReaderT FilePath IO ()
 cleanDir = do
   dir <- ask
   listOfFiles <- liftIO $ D.listDirectory dir
-  date <- liftIO getISODate
+  date <- getISODate
   let p x = isInfixOf "jpg" x
         && not (date `isInfixOf` x)
         && not ("out" `isInfixOf` x)
