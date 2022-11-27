@@ -4,8 +4,8 @@
 module Quotewallpaper where
 
 -- Modules
-import Control.Monad (unless)
 import Control.Monad.Reader (ReaderT(runReaderT))
+import  Control.Exception (onException)
 import Data.Maybe (fromMaybe)
 import System.Exit (exitSuccess)
 
@@ -23,14 +23,13 @@ import qualified Data.Time as CL
 
 main :: IO ()
 main = do
-  -- Substantiate directory and check for kindle quotes file.
-  dir    <- substantiateDir "quotewallpaper/"
-  checkMyClippingsExists dir
+  -- Substantiate directory.
+  dir <- substantiateDir "quotewallpaper/"
   
   -- Import and parse qutoes, and then get random one.
   quotes <- C.rawToAQuotes
     . T.pack
-    <$> readFile (dir ++ "My Clippings.txt")
+    <$> onException (readFile (dir ++ "My Clippings.txt")) (noMyClippings dir)
   ranQuote <- getRanQuote quotes
 
   -- Download POTD file, add ran quote and set wallpaper.
@@ -48,12 +47,10 @@ substantiateDir dirname = do
   return appDir
 
 -- Check for "My Clippings.txt" file and exit if not there.
-checkMyClippingsExists :: FilePath -> IO ()
-checkMyClippingsExists dir = do
-  p <- D.doesFileExist $ dir ++ "My Clippings.txt"
-  unless p $ do
-      putStrLn $ "Add My Clipping.txt to " ++ dir
-      exitSuccess
+noMyClippings :: FilePath -> IO ()
+noMyClippings dir = do
+  putStrLn $ "Add My Clipping.txt to " ++ dir
+  exitSuccess
 
 -- Get Random Quote based on day and year.
 getRanQuote :: [C.AnnotatedQuote] -> IO C.AnnotatedQuote
