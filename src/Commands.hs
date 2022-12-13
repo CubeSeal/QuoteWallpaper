@@ -65,22 +65,24 @@ cleanDir = do
   dir <- ask
   listOfFiles <- liftIO $ D.listDirectory dir
   date <- getISODate
-  let p x = isInfixOf "jpg" x
-        && not (date `isInfixOf` x)
-        && not ("out" `isInfixOf` x)
-      oldFiles = map (dir ++) . filter p $ listOfFiles
-      f x = liftIO $ do
+
+  let
+    p x = isInfixOf "jpg" x && not (date `isInfixOf` x) && not ("out" `isInfixOf` x)
+    oldFiles = map (dir ++) . filter p $ listOfFiles
+    f x = liftIO $ do
         D.removeFile x
         putStrLn $ "Removed: " ++ x
+
   mapM_ f oldFiles
 
+-- Truncate strings so it fits on-screen.
 formatQuote :: AnnotatedQuote -> AnnotatedQuote
 formatQuote AQuote {..} = AQuote aAuthor aBook formattedQuote formattedNote
   where
     formattedQuote = foldLines 80 aQuote
     formattedNote  = foldLines 80 <$> aNote
 
--- Truncate Quote so it fits on-screen
+-- Cut string into similarly sized lines respecting word boundaries.
 foldLines :: Int -> T.Text -> T.Text
 foldLines lineLimit str = T.pack $ go (T.unpack str) 0
   where
