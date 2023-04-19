@@ -35,7 +35,7 @@ createImageFile inImgFile C.AQuote {..} = do
     outFile  = "out.jpg"
     outDir   = dir ++ outFile
     quoteStr = T.unpack aQuote
-      ++ "\n\n\t— "
+      ++ "\n\n— "
       ++ T.unpack aAuthor
       ++ " ("
       ++ T.unpack aBook
@@ -55,7 +55,7 @@ createImageFile inImgFile C.AQuote {..} = do
     , "-blur"
     , "0x2"
     , "-font"
-    , "EB-Garamond-08-Regular"
+    , "EB-Garamond-12-Regular"
     , "-fill"
     , "white"
     , "-pointsize"

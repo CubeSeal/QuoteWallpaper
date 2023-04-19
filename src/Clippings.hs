@@ -4,7 +4,7 @@ module Clippings (NoteType, AnnotatedQuote(..), rawToAQuotes) where
 
 -- Modules
 import           Data.Char       (isLetter, isPunctuation)
-import           Data.Maybe      (mapMaybe, isJust)
+import           Data.Maybe      (mapMaybe)
 import qualified Data.Text.Lazy  as T
 import           UsefulFunctions (safeLast, (!?))
 
@@ -87,10 +87,8 @@ filterAQuote :: AnnotatedQuote -> Bool
 filterAQuote AQuote
   { aAuthor = a
   , aQuote = q
-  , aNote = n
-  } = p1 && p2 && p3 && p4
+  } = p1 && p2 && p3
   where
     p1 = maybe False (isPunctuation . snd) $ T.unsnoc q
     p2 = all (`notElem` T.words a) ["Kenneth", "Fred"]
     p3 = length (T.words q) > 1
-    p4 = isJust n
