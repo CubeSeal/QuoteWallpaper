@@ -29,7 +29,7 @@ import qualified WikimediaAPI as W
 import qualified Data.Text.Lazy as T
 
 -- Download image file
-downloadImageFile :: ReaderT FilePath IO FilePath
+downloadImageFile :: MonadIO m => ReaderT FilePath m FilePath
 downloadImageFile = do
   date <- getISODate
   dir  <- ask
@@ -46,7 +46,7 @@ downloadImageFile = do
   return imgFile
 
 -- Take downloaded file and add the quote to it.
-createImageFile :: FilePath -> AnnotatedQuote -> ReaderT FilePath IO FilePath
+createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT FilePath m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
   if I.os == "mingw32"
@@ -54,13 +54,13 @@ createImageFile inFile quote = do
     else KDE.createImageFile inFile formattedQuote
 
 -- Set wallpaper
-setWallpaper :: FilePath -> ReaderT FilePath IO ()
+setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
 setWallpaper q = if I.os == "mingw32"
   then undefined
   else KDE.setWallpaper q
 
 -- Clean 
-cleanDir :: ReaderT FilePath IO ()
+cleanDir :: MonadIO m => ReaderT FilePath m ()
 cleanDir = do
   dir <- ask
   listOfFiles <- liftIO $ D.listDirectory dir

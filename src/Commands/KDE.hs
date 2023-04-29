@@ -20,14 +20,18 @@ import qualified Clippings as C
 import Data.Maybe (fromMaybe)
 
 -- Set Wallpaper
-setWallpaper :: FilePath -> ReaderT FilePath IO ()
+setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
 setWallpaper fp = do
   dir <- ask
   let picDir = dir ++ fp
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
 -- Make image file
-createImageFile :: FilePath -> C.AnnotatedQuote -> ReaderT FilePath IO FilePath
+createImageFile 
+  :: MonadIO m
+  => FilePath
+  -> C.AnnotatedQuote
+  -> ReaderT FilePath m FilePath
 createImageFile inImgFile C.AQuote {..} = do
   dir <- ask
   let

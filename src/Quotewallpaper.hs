@@ -4,12 +4,11 @@
 module Quotewallpaper where
 
 -- Modules
-import Control.Monad.Reader (ReaderT(runReaderT))
-import  Control.Exception (onException)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadIO)
 import Data.Maybe (fromMaybe)
 import System.Exit (exitSuccess)
 
-import UsefulFunctions ((!?))
+import UsefulFunctions ((!?), withReadFile)
 
 import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
@@ -26,18 +25,22 @@ main = do
   -- Substantiate directory.
   dir <- substantiateDir "quotewallpaper/"
   
-  -- Import and parse qutoes, and then get random one.
-  quotes <- C.rawToAQuotes
-    . T.pack
-    <$> onException (readFile (dir ++ "My Clippings.txt")) (noMyClippings dir)
-  ranQuote <- getRanQuote quotes
+  withReadFile
+    (dir ++ "My Clippings.txt")
+    (noMyClippings dir)
+    $ \fileText -> do
+      -- Import and parse qutoes, and then get random one.
+      ranQuote <- getRanQuote . C.rawToAQuotes $ T.pack fileText
+      flip runReaderT dir $ setQuoteWallpaper ranQuote
 
-  -- Download POTD file, add ran quote and set wallpaper.
-  flip runReaderT dir $ do
-    CMD.cleanDir
-    downloadedFile <- CMD.downloadImageFile
-    imgFile <- CMD.createImageFile downloadedFile ranQuote
-    CMD.setWallpaper imgFile
+
+-- Download POTD file, add ran quote and set wallpaper.
+setQuoteWallpaper :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m ()
+setQuoteWallpaper ranQuote = do
+  CMD.cleanDir
+  downloadedFile <- CMD.downloadImageFile
+  imgFile <- CMD.createImageFile downloadedFile ranQuote
+  CMD.setWallpaper imgFile
 
 -- Create directory if not existing already.
 substantiateDir :: FilePath -> IO FilePath
@@ -58,9 +61,8 @@ getRanQuote quotes = do
   (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
   let
     -- Seed that is unique per day.
-    lenQuote = length quotes
-    dailySeed = (fromInteger yearNum + dayNum) `mod` lenQuote
-    (ranNum, _) = R.uniformR (0, lenQuote - 1) $ R.mkStdGen dailySeed
+    dailySeed = fromInteger yearNum + dayNum
+    (ranNum, _) = R.uniformR (0, length quotes - 1) $ R.mkStdGen dailySeed
     -- This should be safe.
     ranQuote = fromMaybe undefined $ quotes !? ranNum
   return ranQuote

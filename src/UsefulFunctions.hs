@@ -3,9 +3,12 @@ module UsefulFunctions
   , safeHead
   , safeTail
   , safeLast
-  , getISODate ) where
+  , getISODate
+  , withReadFile ) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
+import GHC.IO.Exception (IOException(IOError), IOErrorType (NoSuchThing))
+import Control.Exception (try, throwIO)
 
 import qualified Data.Time.Clock as C (UTCTime (utctDay), getCurrentTime)
 import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
@@ -31,3 +34,12 @@ safeLast x      = Just $ last x
 
 getISODate :: MonadIO m => m String
 getISODate =  liftIO $ C.iso8601Show . C.utctDay <$> C.getCurrentTime
+
+withReadFile :: MonadIO m => FilePath -> m a -> (String -> m a) -> m a
+withReadFile filepath failIO successIO = do
+  fileRaw <- liftIO . try $ readFile filepath
+
+  case fileRaw of
+    Left (IOError _ NoSuchThing _ _ _ _) -> failIO
+    Left e -> liftIO $ throwIO e
+    Right fileText -> successIO fileText

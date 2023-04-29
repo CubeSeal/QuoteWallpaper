@@ -29,20 +29,19 @@ data AnnotatedQuote = AQuote
   } deriving (Show)
 
 -- Get Valid Quotes from Raw file data
+rawToAQuotes :: T.Text -> [AnnotatedQuote]
+rawToAQuotes = filter filterAQuote . quotesToAQuotes . rawToQuotes
+
 rawToQuotes :: T.Text -> [Quote]
 rawToQuotes = mapMaybe parseRawQuote . T.splitOn delim
   where
     delim = "=========="
 
-rawToAQuotes :: T.Text -> [AnnotatedQuote]
-rawToAQuotes = filter filterAQuote . quotesToAQuotes . rawToQuotes
-
 quotesToAQuotes :: [Quote] -> [AnnotatedQuote]
 quotesToAQuotes [] = []
-quotesToAQuotes [Quote a b _ q] = [AQuote a b q Nothing]
-quotesToAQuotes (Quote a b nT q : Quote a1 b1 nT1 q1 : xs)
-  | nT == Highlight && nT1 == Note = AQuote a b q (Just q1) : quotesToAQuotes xs
-  | otherwise = AQuote a b q Nothing : quotesToAQuotes (Quote a1 b1 nT1 q1 : xs)
+quotesToAQuotes (Quote auth bk Highlight qte : Quote _ _ Note note: xs) =
+  AQuote auth bk qte (Just note) : quotesToAQuotes xs
+quotesToAQuotes (Quote a b _ q : xs) = AQuote a b q Nothing : quotesToAQuotes xs
 
 -- Parse Quote
 parseRawQuote :: T.Text -> Maybe Quote
