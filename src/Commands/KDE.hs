@@ -19,14 +19,14 @@ import qualified Data.Text.Lazy as T
 import qualified Clippings as C
 import Data.Maybe (fromMaybe)
 
--- Set Wallpaper
+-- | Set Wallpaper
 setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
 setWallpaper fp = do
   dir <- ask
   let picDir = dir ++ fp
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
--- Make image file
+-- | Make image file
 createImageFile 
   :: MonadIO m
   => FilePath

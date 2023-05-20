@@ -9,11 +9,13 @@ import qualified Data.Text.Lazy  as T
 import           UsefulFunctions (safeLast, (!?))
 
 -- Some useful datatypes
+-- | Simple sum type to mark whether quote is a note/highlight.
 data NoteType
   = Note
   | Highlight
   deriving (Show, Eq)
 
+-- | Original quote type parsed directly into.
 data Quote = Quote
   { author   :: T.Text
   , book     :: T.Text
@@ -21,6 +23,7 @@ data Quote = Quote
   , quote    :: T.Text
   } deriving (Show, Eq)
 
+-- | Informative quote type that associates notes with highlights properly.
 data AnnotatedQuote = AQuote
   { aAuthor :: T.Text
   , aBook   :: T.Text
@@ -28,7 +31,7 @@ data AnnotatedQuote = AQuote
   , aNote   :: Maybe T.Text
   } deriving (Show)
 
--- Get Valid Quotes from Raw file data
+-- | Get Valid Quotes from Raw file data.
 rawToAQuotes :: T.Text -> [AnnotatedQuote]
 rawToAQuotes = filter filterAQuote . quotesToAQuotes . rawToQuotes
 
@@ -37,13 +40,14 @@ rawToQuotes = mapMaybe parseRawQuote . T.splitOn delim
   where
     delim = "=========="
 
+-- | Conversion function between quote types.
 quotesToAQuotes :: [Quote] -> [AnnotatedQuote]
 quotesToAQuotes [] = []
 quotesToAQuotes (Quote auth bk Highlight qte : Quote _ _ Note note: xs) =
   AQuote auth bk qte (Just note) : quotesToAQuotes xs
 quotesToAQuotes (Quote a b _ q : xs) = AQuote a b q Nothing : quotesToAQuotes xs
 
--- Parse Quote
+-- | Parse Quote from file text.
 parseRawQuote :: T.Text -> Maybe Quote
 parseRawQuote str = do
   let ls = T.lines $ T.dropWhile isNewline str

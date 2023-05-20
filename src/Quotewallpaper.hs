@@ -34,7 +34,7 @@ main = do
       flip runReaderT dir $ setQuoteWallpaper ranQuote
 
 
--- Download POTD file, add ran quote and set wallpaper.
+-- | Download POTD file, add ran quote and set wallpaper.
 setQuoteWallpaper :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m ()
 setQuoteWallpaper ranQuote = do
   CMD.cleanDir
@@ -42,20 +42,20 @@ setQuoteWallpaper ranQuote = do
   imgFile <- CMD.createImageFile downloadedFile ranQuote
   CMD.setWallpaper imgFile
 
--- Create directory if not existing already.
+-- | Create directory if not existing already.
 substantiateDir :: FilePath -> IO FilePath
 substantiateDir dirname = do
   appDir <- D.getAppUserDataDirectory dirname
   D.createDirectoryIfMissing True appDir
   return appDir
 
--- Check for "My Clippings.txt" file and exit if not there.
+-- | Check for "My Clippings.txt" file and exit if not there.
 noMyClippings :: FilePath -> IO ()
 noMyClippings dir = do
   putStrLn $ "Add My Clipping.txt to " ++ dir
   exitSuccess
 
--- Get Random Quote based on day and year.
+-- | Get Random Quote based on day and year.
 getRanQuote :: [C.AnnotatedQuote] -> IO C.AnnotatedQuote
 getRanQuote quotes = do
   (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime

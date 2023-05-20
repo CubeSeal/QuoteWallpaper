@@ -28,7 +28,7 @@ import qualified Commands.Windows as WIN
 import qualified WikimediaAPI as W
 import qualified Data.Text.Lazy as T
 
--- Download image file
+-- | Download image file and save to state directory. Returns relative filepath.
 downloadImageFile :: MonadIO m => ReaderT FilePath m FilePath
 downloadImageFile = do
   date <- getISODate
@@ -45,7 +45,7 @@ downloadImageFile = do
 
   return imgFile
 
--- Take downloaded file and add the quote to it.
+-- | Take image file and add the quote to it.
 createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT FilePath m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
@@ -53,13 +53,13 @@ createImageFile inFile quote = do
     then WIN.createImageFile inFile formattedQuote
     else KDE.createImageFile inFile formattedQuote
 
--- Set wallpaper
+-- | Set wallpaper.
 setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
 setWallpaper q = if I.os == "mingw32"
   then undefined
   else KDE.setWallpaper q
 
--- Clean 
+-- | Clean directory of extra/junk files.
 cleanDir :: MonadIO m => ReaderT FilePath m ()
 cleanDir = do
   dir <- ask
@@ -75,14 +75,14 @@ cleanDir = do
 
   mapM_ f oldFiles
 
--- Truncate strings so it fits on-screen.
+-- | Truncate strings so it fits on-screen.
 formatQuote :: AnnotatedQuote -> AnnotatedQuote
 formatQuote AQuote {..} = AQuote aAuthor aBook formattedQuote formattedNote
   where
     formattedQuote = foldLines 80 aQuote
     formattedNote  = foldLines 80 <$> aNote
 
--- Cut string into similarly sized lines respecting word boundaries.
+-- | Cut string into similarly sized lines respecting word boundaries.
 foldLines :: Int -> T.Text -> T.Text
 foldLines lineLimit str = T.pack $ go (T.unpack str) 0
   where

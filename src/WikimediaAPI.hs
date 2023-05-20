@@ -33,7 +33,7 @@ type FileName = T.Text
 type URL      = T.Text
 
 -- Functions
--- Make request to server for file name and then for url
+-- | Make request to server for file name and then for url.
 fetchPOTD :: MonadIO m => m URL
 fetchPOTD = do
   date <- T.pack <$> getISODate
@@ -55,7 +55,7 @@ fetchPOTD = do
     
     return imgUrl
 
--- Drop down JSON Object to extract filename
+-- | Drop down JSON Object to extract filename.
 parseFileName :: H.Value -> Maybe T.Text
 parseFileName x = do
   (H.String filename)
@@ -67,7 +67,7 @@ parseFileName x = do
     >>= objExtract "title"
   return filename
 
--- Make another request to Wikimedia API for file URL
+-- | Make another request to Wikimedia API for file URL.
 fetchImageSrc :: FileName -> Url a -> Req (JsonResponse H.Value)
 fetchImageSrc f url = do
   let
@@ -78,7 +78,7 @@ fetchImageSrc f url = do
            <> "titles" =: f
   req GET url NoReqBody jsonResponse params
 
--- Drop down the JSON object to extract url
+-- | Drop down the JSON object to extract url.
 parseURL :: H.Value -> Maybe URL
 parseURL x = do
   (H.String url)
