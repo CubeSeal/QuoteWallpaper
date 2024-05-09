@@ -35,7 +35,8 @@ library
                       Commands.KDE,
                       Commands.Windows,
                       WikimediaAPI,
-                      UsefulFunctions
+                      UsefulFunctions,
+                      DalleDownload
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -66,4 +67,13 @@ executable Quotewallpaper
         Quotewallpaper
 
     hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite tests
+    type: exitcode-stdio-1.0
+    main-is: tests.hs
+    build-depends: base ^>=4.14.3.0,
+                    HUnit,
+                    DalleDownload
+    hs-source-dirs: tests
     default-language: Haskell2010
