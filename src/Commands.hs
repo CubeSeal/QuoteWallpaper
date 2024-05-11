@@ -25,12 +25,13 @@ import qualified System.Info as I
 
 import qualified Commands.KDE as KDE
 import qualified Commands.Windows as WIN
-import qualified WikimediaAPI as W
 import qualified Data.Text.Lazy as T
+import qualified Clippings as C
+import qualified DalleDownload as O
 
 -- | Download image file and save to state directory. Returns relative filepath.
-downloadImageFile :: MonadIO m => ReaderT FilePath m FilePath
-downloadImageFile = do
+downloadImageFile :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m FilePath
+downloadImageFile ranQuote = do
   date <- getISODate
   dir  <- ask
   let
@@ -40,8 +41,8 @@ downloadImageFile = do
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
   unless doesRawImgFileExist $ do
-    url <- W.fetchPOTD
-    liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack $ T.fromStrict url]
+    url <- O.fetchDalle3 ranQuote
+    liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack url]
 
   return imgFile
 

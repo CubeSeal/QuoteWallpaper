@@ -38,7 +38,7 @@ main = do
 setQuoteWallpaper :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m ()
 setQuoteWallpaper ranQuote = do
   CMD.cleanDir
-  downloadedFile <- CMD.downloadImageFile
+  downloadedFile <- CMD.downloadImageFile ranQuote
   imgFile <- CMD.createImageFile downloadedFile ranQuote
   CMD.setWallpaper imgFile
 
