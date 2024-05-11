@@ -25,8 +25,21 @@ common optimisation
     default-language: Haskell2010
     ghc-options:      -Wall -O2
 
+-- LANGUAGE extensions used by modules in this package.
+common common-dependencies
+    build-depends:    base ^>=4.14.3.0,
+                      text,
+                      time,
+                      process,
+                      req,
+                      aeson,
+                      vector,
+                      directory,
+                      mtl,
+                      random
+
 library
-    import:           optimisation
+    import:           optimisation, common-dependencies
     exposed-modules:  Quotewallpaper
 
     -- Modules included in this library but not exported.
@@ -38,18 +51,7 @@ library
                       UsefulFunctions,
                       DalleDownload
 
-    -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.14.3.0,
-                      text,
-                      time,
-                      process,
-                      req,
-                      aeson,
-                      vector,
-                      directory,
-                      mtl,
-                      random
     hs-source-dirs:   src
     default-language: Haskell2010
 
@@ -70,10 +72,11 @@ executable Quotewallpaper
     default-language: Haskell2010
 
 test-suite tests
+    import: common-dependencies
     type: exitcode-stdio-1.0
     main-is: tests.hs
+    other-modules: DalleDownload
     build-depends: base ^>=4.14.3.0,
-                    HUnit,
-                    DalleDownload
-    hs-source-dirs: tests
+                    HUnit
+    hs-source-dirs: tests, src
     default-language: Haskell2010

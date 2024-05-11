@@ -1,13 +1,16 @@
-module Tests where
+module Main where
 
 import Test.HUnit
+    ( assertString, runTestTTAndExit, Test(TestCase), assertBool )
 
-import DalleDownload
+import DalleDownload ( testConnection )
 
 import qualified System.Exit as Exit
 
 main :: IO ()
-main = do
+main = runTestTTAndExit openAIAPITest
 
 openAIAPITest :: Test
-openAIAPITest = TestCase $ assertString testConnection
+openAIAPITest = TestCase $ do
+  result <- testConnection
+  assertBool "OpenAI Connection does not work" $ result /= ""
