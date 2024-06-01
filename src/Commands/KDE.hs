@@ -13,17 +13,19 @@ import Control.Monad.Reader
   , MonadReader (ask)
   , MonadIO (liftIO)
   )
+import Data.Maybe (fromMaybe)
 
 import qualified Data.Text.Lazy as T
 
+import UsefulFunctions (getISODate)
+
 import qualified Clippings as C
-import Data.Maybe (fromMaybe)
 
 -- | Set Wallpaper
 setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
 setWallpaper fp = do
   dir <- ask
-  let picDir = dir ++ fp
+  let picDir = dir ++ "outfiles/" ++ fp
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
 -- | Make image file
@@ -34,10 +36,11 @@ createImageFile
   -> ReaderT FilePath m FilePath
 createImageFile inImgFile C.AQuote {..} = do
   dir <- ask
+  date <- getISODate
   let
-    picDir   = dir ++ inImgFile
-    outFile  = "out.jpg"
-    outDir   = dir ++ outFile
+    picDir   = dir ++ "infiles/" ++ inImgFile
+    outFile  = "out-" ++ date ++ ".jpg"
+    outDir   = dir ++ "outfiles/" ++ outFile
     quoteStr = T.unpack aQuote
       ++ "\n\n— "
       ++ T.unpack aAuthor
@@ -57,7 +60,7 @@ createImageFile inImgFile C.AQuote {..} = do
     , "+sigmoidal-contrast"
     , "3x0%"
     , "-blur"
-    , "0x2"
+    , "0x0"
     , "-font"
     , "EB-Garamond-12-Regular"
     , "-fill"

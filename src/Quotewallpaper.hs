@@ -37,7 +37,7 @@ main = do
 -- | Download POTD file, add ran quote and set wallpaper.
 setQuoteWallpaper :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m ()
 setQuoteWallpaper ranQuote = do
-  CMD.cleanDir
+  --CMD.cleanDir Removing so I can keep pictures.
   downloadedFile <- CMD.downloadImageFile ranQuote
   imgFile <- CMD.createImageFile downloadedFile ranQuote
   CMD.setWallpaper imgFile
@@ -46,7 +46,8 @@ setQuoteWallpaper ranQuote = do
 substantiateDir :: FilePath -> IO FilePath
 substantiateDir dirname = do
   appDir <- D.getAppUserDataDirectory dirname
-  D.createDirectoryIfMissing True appDir
+  D.createDirectoryIfMissing True $ appDir ++ "infiles"
+  D.createDirectoryIfMissing True $ appDir ++ "outfiles"
   return appDir
 
 -- | Check for "My Clippings.txt" file and exit if not there.

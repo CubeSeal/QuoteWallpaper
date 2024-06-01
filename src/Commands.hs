@@ -37,7 +37,7 @@ downloadImageFile ranQuote = do
   let
     command = if I.os == "mingw32" then "-OutFile" else "--output-document="
     imgFile = date ++ ".jpg"
-    fullPathImgFile = dir ++ imgFile
+    fullPathImgFile = dir ++ "infiles/" ++ imgFile
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
   unless doesRawImgFileExist $ do
