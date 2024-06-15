@@ -29,6 +29,7 @@ common optimisation
 common common-dependencies
     build-depends:    base ^>=4.14.3.0,
                       text,
+                      bytestring,
                       time,
                       process,
                       req,
