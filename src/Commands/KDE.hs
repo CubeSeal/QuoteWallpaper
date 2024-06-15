@@ -17,14 +17,14 @@ import Data.Maybe (fromMaybe)
 
 import qualified Data.Text.Lazy as T
 
-import UsefulFunctions (getISODate)
+import UsefulFunctions (getISODate, Env (..))
 
 import qualified Clippings as C
 
 -- | Set Wallpaper
-setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
+setWallpaper :: MonadIO m => FilePath -> ReaderT Env m ()
 setWallpaper fp = do
-  dir <- ask
+  Env dir _ <- ask
   let picDir = dir ++ "outfiles/" ++ fp
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
@@ -33,9 +33,9 @@ createImageFile
   :: MonadIO m
   => FilePath
   -> C.AnnotatedQuote
-  -> ReaderT FilePath m FilePath
+  -> ReaderT Env m FilePath
 createImageFile inImgFile C.AQuote {..} = do
-  dir <- ask
+  Env dir _ <- ask
   date <- getISODate
   let
     picDir   = dir ++ "infiles/" ++ inImgFile

@@ -2,17 +2,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module DalleDownload 
+module DalleDownload
   (
     fetchDalle3
   ) where
 
 -- Modules
+import Data.Text.Lazy.Encoding (encodeUtf8)
+import Data.ByteString.Lazy (toStrict)
 import Control.Monad.Reader (MonadIO)
 import Network.HTTP.Req (runReq, defaultHttpConfig, POST (POST), (/:), jsonResponse, ReqBodyJson (ReqBodyJson), https, req, responseBody, header)
 import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
 import Data.Vector ((!?))
+
+import UsefulFunctions (ApiKey (ApiKey))
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Aeson as H
@@ -36,21 +40,23 @@ instance H.FromJSON OpenAiJsonQuery
 
 -- Functions
 -- | Generate Dalle3 Image and return URL
-fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> m URL
-fetchDalle3 C.AQuote {..} = 
+fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey ->  m URL
+fetchDalle3 C.AQuote {..} (ApiKey bearer)=
   runReq defaultHttpConfig $ do
     let
+      bearerMsg = "Bearer " <> toStrict (encodeUtf8 bearer)
       testMessage = OpenAiJsonQuery
         "dall-e-3"
         ( "Draw a picture inspired by the following quote:"
         <> aQuote
         <> "Don't include the quote text in the picture."
         )
-        1 "1024x1024"
+        1
+        "1024x1024"
       url = https "api.openai.com" /: "v1" /: "images" /: "generations"
       params = header "Content-Type" "application/json"
-        <> header "Authorization" "Bearer"
-    
+        <> header "Authorization" bearerMsg
+
     _jsonResponse <- req POST url (ReqBodyJson testMessage) jsonResponse params
     return $ fromMaybe undefined $ extractURL $ responseBody _jsonResponse
 

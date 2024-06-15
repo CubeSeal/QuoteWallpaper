@@ -16,7 +16,7 @@ import Control.Monad.Reader
 import Control.Monad (unless)
 
 import Clippings (AnnotatedQuote (..))
-import UsefulFunctions (getISODate)
+import UsefulFunctions (getISODate, Env(..))
 import Data.List (isInfixOf)
 import System.Process ( callProcess ) 
 
@@ -30,10 +30,10 @@ import qualified Clippings as C
 import qualified DalleDownload as O
 
 -- | Download image file and save to state directory. Returns relative filepath.
-downloadImageFile :: MonadIO m => C.AnnotatedQuote -> ReaderT FilePath m FilePath
+downloadImageFile :: MonadIO m => C.AnnotatedQuote -> ReaderT Env m FilePath
 downloadImageFile ranQuote = do
   date <- getISODate
-  dir  <- ask
+  Env dir apiKey <- ask
   let
     command = if I.os == "mingw32" then "-OutFile" else "--output-document="
     imgFile = date ++ ".jpg"
@@ -41,13 +41,13 @@ downloadImageFile ranQuote = do
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
   unless doesRawImgFileExist $ do
-    url <- O.fetchDalle3 ranQuote
+    url <- O.fetchDalle3 ranQuote apiKey
     liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack url]
 
   return imgFile
 
 -- | Take image file and add the quote to it.
-createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT FilePath m FilePath
+createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT Env m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
   if I.os == "mingw32"
@@ -55,7 +55,7 @@ createImageFile inFile quote = do
     else KDE.createImageFile inFile formattedQuote
 
 -- | Set wallpaper.
-setWallpaper :: MonadIO m => FilePath -> ReaderT FilePath m ()
+setWallpaper :: MonadIO m => FilePath -> ReaderT Env m ()
 setWallpaper q = if I.os == "mingw32"
   then undefined
   else KDE.setWallpaper q

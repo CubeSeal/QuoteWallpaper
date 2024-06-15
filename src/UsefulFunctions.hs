@@ -4,14 +4,20 @@ module UsefulFunctions
   , safeTail
   , safeLast
   , getISODate
-  , withReadFile ) where
+  , withReadFile
+  , ApiKey(..)
+  , toApiKey
+  , Env(..)
+  ) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import GHC.IO.Exception (IOException(IOError), IOErrorType (NoSuchThing))
 import Control.Exception (try, throwIO)
+import System.Exit (exitSuccess)
 
 import qualified Data.Time.Clock as C (UTCTime (utctDay), getCurrentTime)
 import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
+import qualified Data.Text.Lazy as T
 
 -- A blight on the language smh.
 infix 5 !?
@@ -41,11 +47,26 @@ getISODate :: MonadIO m => m String
 getISODate =  liftIO $ C.iso8601Show . C.utctDay <$> C.getCurrentTime
 
 -- | Safe readFile function that allows for failure path.
-withReadFile :: MonadIO m => FilePath -> m a -> (String -> m a) -> m a
-withReadFile filepath failIO successIO = do
+withReadFile :: MonadIO m => FilePath -> (String -> m a) -> m a
+withReadFile filepath successIO = do
   fileRaw <- liftIO . try $ readFile filepath
 
   case fileRaw of
-    Left (IOError _ NoSuchThing _ _ _ _) -> failIO
+    Left (IOError _ NoSuchThing _ _ _ _) -> do
+      liftIO . putStrLn $ "Add " <> filepath <> " to directory." 
+      liftIO exitSuccess
     Left e -> liftIO $ throwIO e
     Right fileText -> successIO fileText
+
+-- | ApiKey Wrapper
+newtype ApiKey = ApiKey {toText :: T.Text}
+
+toApiKey :: String -> ApiKey
+toApiKey = ApiKey . T.pack
+
+-- | Enviornment data type
+-- Ugh
+data Env = Env
+  { directory :: FilePath
+  , apiKey :: ApiKey
+  }
