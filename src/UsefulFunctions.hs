@@ -8,9 +8,10 @@ module UsefulFunctions
   , safeLast
   , getISODate
   , withReadFile
-  , ApiKey(..)
+  , ApiKey(fromApiKey)
   , toApiKey
   , Env(..)
+  , getDay
   ) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
@@ -18,7 +19,7 @@ import GHC.IO.Exception (IOException(IOError), IOErrorType (NoSuchThing))
 import Control.Exception (try, throwIO)
 import System.Exit (exitSuccess)
 
-import qualified Data.Time.Clock as C (UTCTime (utctDay), getCurrentTime)
+import qualified Data.Time as C
 import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
 import qualified Data.Text.Lazy as T
 
@@ -46,8 +47,15 @@ safeLast []     = Nothing
 safeLast x      = Just $ last x
 
 -- | Helper function that returns ISO Date.
+getDay :: MonadIO m => m C.Day
+getDay =  liftIO $ do
+  C.ZonedTime (C.LocalTime day _ ) _ <- C.getZonedTime
+
+  return day
+
+-- | Helper function that returns ISO Date.
 getISODate :: MonadIO m => m String
-getISODate =  liftIO $ C.iso8601Show . C.utctDay <$> C.getCurrentTime
+getISODate =  C.iso8601Show <$> getDay
 
 -- | Safe readFile function that has failure path.
 withReadFile :: MonadIO m => FilePath -> (String -> m a) -> m a

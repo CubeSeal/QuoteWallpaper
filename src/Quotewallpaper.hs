@@ -8,7 +8,7 @@ import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO)
 import Data.Maybe (fromMaybe)
 import Data.Foldable (traverse_)
 
-import UsefulFunctions ((!?), Env(..), toApiKey)
+import UsefulFunctions ((!?), Env(..), toApiKey, getDay)
 
 import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
@@ -17,15 +17,14 @@ import qualified System.Random as R
 import qualified Clippings as C
 import qualified Commands as CMD
 import qualified Data.Time.Calendar.OrdinalDate as DT
-import qualified Data.Time as CL
 
 
 main :: IO ()
 main = do
   -- Substantiate directory.
   dir <- substantiateDir "quotewallpaper/"
-  
-  (apiKeyText : clippings : _) <- traverse readFile $ (dir <>) <$>
+
+  (apiKeyText : clippings : _) <- traverse (readFile . (dir <>))
     [ "Bearer.txt"
     , "My Clippings.txt"
     ]
@@ -46,7 +45,7 @@ main = do
 substantiateDir :: MonadIO m => FilePath -> m FilePath
 substantiateDir dirname = liftIO $ do
   appDir <- D.getAppUserDataDirectory dirname
-  traverse_ (D.createDirectoryIfMissing True) $ (appDir <>) <$>
+  traverse_ (D.createDirectoryIfMissing True . (appDir <>))
     [ "infiles"
     , "outfiles"
     ]
@@ -55,7 +54,7 @@ substantiateDir dirname = liftIO $ do
 -- | Get Random Quote based on day and year.
 getRanQuote :: MonadIO m => [C.AnnotatedQuote] -> m C.AnnotatedQuote
 getRanQuote quotes = liftIO $ do
-  (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
+  (yearNum, dayNum) <- DT.toOrdinalDate <$> getDay
   let
     -- Seed that is unique per day.
     dailySeed = fromInteger yearNum + dayNum
