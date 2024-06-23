@@ -1,3 +1,6 @@
+-- No clown T.pack and T.unpack
+{-# LANGUAGE OverloadedStrings #-}
+
 module UsefulFunctions
   ( (!?)
   , safeHead
@@ -46,7 +49,7 @@ safeLast x      = Just $ last x
 getISODate :: MonadIO m => m String
 getISODate =  liftIO $ C.iso8601Show . C.utctDay <$> C.getCurrentTime
 
--- | Safe readFile function that allows for failure path.
+-- | Safe readFile function that has failure path.
 withReadFile :: MonadIO m => FilePath -> (String -> m a) -> m a
 withReadFile filepath successIO = do
   fileRaw <- liftIO . try $ readFile filepath
@@ -59,10 +62,10 @@ withReadFile filepath successIO = do
     Right fileText -> successIO fileText
 
 -- | ApiKey Wrapper
-newtype ApiKey = ApiKey {toText :: T.Text}
+newtype ApiKey = ApiKey {fromApiKey :: T.Text}
 
 toApiKey :: String -> ApiKey
-toApiKey = ApiKey . T.pack
+toApiKey = ApiKey . T.replace "\n" mempty . T.pack 
 
 -- | Enviornment data type
 -- Ugh

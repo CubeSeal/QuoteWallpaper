@@ -4,17 +4,11 @@
 module Quotewallpaper where
 
 -- Modules
--- Modules
--- Modules
--- Modules
--- Modules
--- Modules
--- Modules
--- Modules
-import Control.Monad.Reader (ReaderT(runReaderT), MonadIO)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO)
 import Data.Maybe (fromMaybe)
+import Data.Foldable (traverse_)
 
-import UsefulFunctions ((!?), withReadFile, Env(..), toApiKey)
+import UsefulFunctions ((!?), Env(..), toApiKey)
 
 import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
@@ -31,33 +25,36 @@ main = do
   -- Substantiate directory.
   dir <- substantiateDir "quotewallpaper/"
   
-  withReadFile (dir <> "Bearer.txt") $ \apiKeyText ->
-    withReadFile (dir ++ "My Clippings.txt") $ \clippings -> do
-      -- Import and parse quotes, and then get random one.
-      ranQuote <- getRanQuote . C.rawToAQuotes $ T.pack clippings
-      flip runReaderT (Env dir (toApiKey apiKeyText)) $ setQuoteWallpaper ranQuote
+  (apiKeyText : clippings : _) <- traverse readFile $ (dir <>) <$>
+    [ "Bearer.txt"
+    , "My Clippings.txt"
+    ]
 
+  let env = Env dir $ toApiKey apiKeyText
 
--- | Download POTD file, add ran quote and set wallpaper.
-setQuoteWallpaper :: MonadIO m => C.AnnotatedQuote -> ReaderT Env m ()
-setQuoteWallpaper ranQuote = do
-  --CMD.cleanDir Removing so I can keep pictures.
-  downloadedFile <- CMD.downloadImageFile ranQuote
+  -- Import and parse quotes, and then get random one.
+  ranQuote <- getRanQuote . C.rawToAQuotes $ T.pack clippings
 
-  imgFile <- CMD.createImageFile downloadedFile ranQuote
-  CMD.setWallpaper imgFile
+  flip runReaderT env $ do
+    --CMD.cleanDir Removing so I can keep pictures.
+    downloadedFile <- CMD.downloadImageFile ranQuote
+
+    imgFile <- CMD.createImageFile downloadedFile ranQuote
+    CMD.setWallpaper imgFile
 
 -- | Create directory if not existing already.
-substantiateDir :: FilePath -> IO FilePath
-substantiateDir dirname = do
+substantiateDir :: MonadIO m => FilePath -> m FilePath
+substantiateDir dirname = liftIO $ do
   appDir <- D.getAppUserDataDirectory dirname
-  D.createDirectoryIfMissing True $ appDir ++ "infiles"
-  D.createDirectoryIfMissing True $ appDir ++ "outfiles"
+  traverse_ (D.createDirectoryIfMissing True) $ (appDir <>) <$>
+    [ "infiles"
+    , "outfiles"
+    ]
   return appDir
 
 -- | Get Random Quote based on day and year.
-getRanQuote :: [C.AnnotatedQuote] -> IO C.AnnotatedQuote
-getRanQuote quotes = do
+getRanQuote :: MonadIO m => [C.AnnotatedQuote] -> m C.AnnotatedQuote
+getRanQuote quotes = liftIO $ do
   (yearNum, dayNum) <- DT.toOrdinalDate . CL.utctDay <$> CL.getCurrentTime
   let
     -- Seed that is unique per day.
