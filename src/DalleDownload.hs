@@ -16,7 +16,7 @@ import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
 import Data.Vector ((!?))
 
-import UsefulFunctions (ApiKey (ApiKey))
+import UsefulFunctions (ApiKey (fromApiKey))
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Aeson as H
@@ -41,10 +41,10 @@ instance H.FromJSON OpenAiJsonQuery
 -- Functions
 -- | Generate Dalle3 Image and return URL
 fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey ->  m URL
-fetchDalle3 C.AQuote {..} (ApiKey bearer)=
+fetchDalle3 C.AQuote {..} apiKey =
   runReq defaultHttpConfig $ do
     let
-      bearerMsg = "Bearer " <> toStrict (encodeUtf8 bearer)
+      bearerMsg = "Bearer " <> toStrict (encodeUtf8 $ fromApiKey apiKey)
       testMessage = OpenAiJsonQuery
         "dall-e-3"
         ( "Draw a picture inspired by the following quote:"

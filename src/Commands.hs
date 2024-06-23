@@ -40,6 +40,7 @@ downloadImageFile ranQuote = do
     fullPathImgFile = dir ++ "infiles/" ++ imgFile
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
+
   unless doesRawImgFileExist $ do
     url <- O.fetchDalle3 ranQuote apiKey
     liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack url]
@@ -50,9 +51,10 @@ downloadImageFile ranQuote = do
 createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT Env m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
-  if I.os == "mingw32"
-    then WIN.createImageFile inFile formattedQuote
-    else KDE.createImageFile inFile formattedQuote
+  case I.os of
+    "mingw32" -> WIN.createImageFile inFile formattedQuote
+    "linux" -> KDE.createImageFile inFile formattedQuote
+    _ -> undefined --TODO: Add default behaviour.
 
 -- | Set wallpaper.
 setWallpaper :: MonadIO m => FilePath -> ReaderT Env m ()
