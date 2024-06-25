@@ -40,7 +40,7 @@ instance H.FromJSON OpenAiJsonQuery
 
 -- Functions
 -- | Generate Dalle3 Image and return URL
-fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey ->  m URL
+fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey -> m URL
 fetchDalle3 C.AQuote {..} apiKey =
   runReq defaultHttpConfig $ do
     let
@@ -48,8 +48,12 @@ fetchDalle3 C.AQuote {..} apiKey =
       testMessage = OpenAiJsonQuery
         "dall-e-3"
         ( "Draw a picture inspired by the following quote:"
+        <> "\""
         <> aQuote
-        <> "Don't include the quote text in the picture."
+        <> "\"."
+        <> "Don't include the quote text in the picture and think carefully,"
+        <> " making sure you use context and subtext to find the true meaning of the quote."
+        <> "Make sure the picture and its art-style fully embody the quote."
         )
         1
         "1024x1024"
