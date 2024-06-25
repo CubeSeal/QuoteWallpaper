@@ -43,10 +43,10 @@ createImageFile inImgFile C.AQuote {..} = do
     picDir   = dir ++ "infiles/" ++ inImgFile
     outFile  = "out-" ++ date ++ ".jpg"
     outDir   = dir ++ "outfiles/" ++ outFile
-    quoteStr = T.unpack $
-      aQuote
+    quoteStr = T.unpack
+      $ T.replace "\"" "\\\"" aQuote
       <> "\n\n— "
-      <> T.replace "\"" "\\\"" aAuthor
+      <> aAuthor
       <> " ("
       <> aBook
       <> ")"
