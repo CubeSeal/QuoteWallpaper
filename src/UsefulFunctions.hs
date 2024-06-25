@@ -12,6 +12,7 @@ module UsefulFunctions
   , toApiKey
   , Env(..)
   , getDay
+  , replaceElems
   ) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
@@ -74,6 +75,13 @@ newtype ApiKey = ApiKey {fromApiKey :: T.Text}
 
 toApiKey :: String -> ApiKey
 toApiKey = ApiKey . T.replace "\n" mempty . T.pack 
+
+-- | Replace multiple elems in Text
+replaceElems :: [(T.Text, T.Text)] -> T.Text -> T.Text
+replaceElems elemReplacementList initialText = foldl f initialText elemReplacementList
+   where
+    f :: T.Text -> (T.Text, T.Text) -> T.Text
+    f inputText (elem', replacement) = T.replace elem' replacement inputText
 
 -- | Enviornment data type
 -- Ugh
