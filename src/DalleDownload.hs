@@ -51,7 +51,7 @@ fetchDalle3 C.AQuote {..} apiKey =
         <> "\""
         <> aQuote
         <> "\"."
-        <> "Don't include the quote text in the picture and think carefully,"
+        <> "Under any circumstances, don't include the quote text in the picture and think carefully,"
         <> " making sure you use context and subtext to find the true meaning of the quote."
         <> "Make sure the picture and its art-style fully embody the quote."
         )

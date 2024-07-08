@@ -54,7 +54,7 @@ createImageFile inImgFile C.AQuote {..} = do
     noteStr = T.unpack $
       case aNote of
         Nothing -> ""
-        Just text -> "-gravity southeast -annotate +100+100" <|> text
+        Just text -> "-gravity southeast -annotate +100+100" <|> ("\"" <> text <> "\"")
   liftIO $ callCommand $
     "convert"
     <|> picDir
