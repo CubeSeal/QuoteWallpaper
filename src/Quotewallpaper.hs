@@ -4,19 +4,22 @@
 module Quotewallpaper where
 
 -- Modules
-import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO, filterM)
 import Data.Maybe (fromMaybe)
 import Data.Foldable (traverse_)
+import Data.Char (isPunctuation)
 
-import UsefulFunctions ((!?), Env(..), toApiKey, getDay)
+import UsefulFunctions ((!?), getDay)
+import App(Env(..), toApiKey)
 
 import qualified Data.Text.Lazy as T
 import qualified System.Directory as D
 import qualified System.Random as R
+import qualified Data.Time.Calendar.OrdinalDate as DT
+import qualified Data.Time as DT
 
 import qualified Clippings as C
 import qualified Commands as CMD
-import qualified Data.Time.Calendar.OrdinalDate as DT
 
 
 main :: IO ()
@@ -32,7 +35,8 @@ main = do
   let env = Env dir $ toApiKey apiKeyText
 
   -- Import and parse quotes, and then get random one.
-  ranQuote <- getRanQuote . C.rawToAQuotes $ T.pack clippings
+  filteredQuotes <- filterM filterAQuote . C.rawToAQuotes $ T.pack clippings
+  ranQuote <- getRanQuote filteredQuotes
 
   flip runReaderT env $ do
     --CMD.cleanDir Removing so I can keep pictures.
@@ -61,4 +65,19 @@ getRanQuote quotes = liftIO $ do
     (ranNum, _) = R.uniformR (0, length quotes - 1) $ R.mkStdGen dailySeed
     -- This should be safe.
     ranQuote = fromMaybe undefined $ quotes !? ranNum
+  print ranQuote
   return ranQuote
+
+filterAQuote :: C.AnnotatedQuote -> IO Bool
+filterAQuote C.AQuote
+  { C.aAuthor = a
+  , C.aQuote = q
+  , C.aDateTime = DT.LocalTime day _
+  } = (&&) <$> p4 <*> pure (p1 && p2 && p3)
+  where
+    p1 = maybe False (isPunctuation . snd) $ T.unsnoc q
+    p2 = all (`notElem` T.words a) ["Kenneth", "Fred"]
+    p3 = length (T.words q) > 1
+    p4 = do
+      today <- getDay
+      return $ today `DT.diffDays` day <= 1000

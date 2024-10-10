@@ -17,7 +17,8 @@ import Control.Monad.Reader
 
 import qualified Data.Text.Lazy as T
 
-import UsefulFunctions (getISODate, Env (..))
+import UsefulFunctions (getISODate)
+import App(Env(..))
 
 import qualified Clippings as C
 

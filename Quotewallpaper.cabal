@@ -50,7 +50,8 @@ library
                       Commands.Windows,
                       WikimediaAPI,
                       UsefulFunctions,
-                      DalleDownload
+                      DalleDownload,
+                      App
 
     -- other-extensions:
     hs-source-dirs:   src

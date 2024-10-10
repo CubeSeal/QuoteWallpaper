@@ -16,7 +16,8 @@ import Control.Monad.Reader
 import Control.Monad (unless)
 
 import Clippings (AnnotatedQuote (..))
-import UsefulFunctions (getISODate, Env(..))
+import UsefulFunctions (getISODate)
+import App(Env(..))
 import Data.List (isInfixOf)
 import System.Process ( callProcess ) 
 
@@ -80,7 +81,7 @@ cleanDir = do
 
 -- | Truncate strings so it fits on-screen.
 formatQuote :: AnnotatedQuote -> AnnotatedQuote
-formatQuote AQuote {..} = AQuote aAuthor aBook formattedQuote formattedNote
+formatQuote AQuote {..} = AQuote aAuthor aBook formattedQuote formattedNote aDateTime
   where
     formattedQuote = foldLines 80 aQuote
     formattedNote  = foldLines 80 <$> aNote

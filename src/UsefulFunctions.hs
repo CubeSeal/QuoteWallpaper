@@ -8,9 +8,6 @@ module UsefulFunctions
   , safeLast
   , getISODate
   , withReadFile
-  , ApiKey(fromApiKey)
-  , toApiKey
-  , Env(..)
   , getDay
   , replaceElems
   ) where
@@ -21,8 +18,8 @@ import Control.Exception (try, throwIO)
 import System.Exit (exitSuccess)
 
 import qualified Data.Time as C
-import qualified Data.Time.Format.ISO8601 as C (iso8601Show)
 import qualified Data.Text.Lazy as T
+import qualified Data.Time.Format.ISO8601 as C
 
 -- A blight on the language smh.
 infix 5 !?
@@ -70,22 +67,9 @@ withReadFile filepath successIO = do
     Left e -> liftIO $ throwIO e
     Right fileText -> successIO fileText
 
--- | ApiKey Wrapper
-newtype ApiKey = ApiKey {fromApiKey :: T.Text}
-
-toApiKey :: String -> ApiKey
-toApiKey = ApiKey . T.replace "\n" mempty . T.pack 
-
 -- | Replace multiple elems in Text
 replaceElems :: [(T.Text, T.Text)] -> T.Text -> T.Text
 replaceElems elemReplacementList initialText = foldl f initialText elemReplacementList
    where
     f :: T.Text -> (T.Text, T.Text) -> T.Text
     f inputText (elem', replacement) = T.replace elem' replacement inputText
-
--- | Enviornment data type
--- Ugh
-data Env = Env
-  { directory :: FilePath
-  , apiKey :: ApiKey
-  }

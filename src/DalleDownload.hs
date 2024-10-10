@@ -16,7 +16,7 @@ import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
 import Data.Vector ((!?))
 
-import UsefulFunctions (ApiKey (fromApiKey))
+import App (ApiKey (fromApiKey))
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Aeson as H
@@ -51,7 +51,7 @@ fetchDalle3 C.AQuote {..} apiKey =
         <> "\""
         <> aQuote
         <> "\"."
-        <> "Under any circumstances, don't include the quote text in the picture and think carefully,"
+        <> "For no cases, include the quote text in the picture and think carefully,"
         <> " making sure you use context and subtext to find the true meaning of the quote."
         <> "Make sure the picture and its art-style fully embody the quote."
         )

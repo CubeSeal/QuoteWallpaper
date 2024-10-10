@@ -3,10 +3,13 @@
 module Clippings (NoteType, AnnotatedQuote(..), rawToAQuotes) where
 
 -- Modules
-import           Data.Char       (isLetter, isPunctuation)
-import           Data.Maybe      (mapMaybe)
+import Data.Char       (isLetter)
+import Data.Maybe      (mapMaybe, fromMaybe)
+import UsefulFunctions (safeLast, (!?))
+
+import qualified Data.Time as C
 import qualified Data.Text.Lazy  as T
-import           UsefulFunctions (safeLast, (!?))
+import Text.Read (readMaybe)
 
 -- Some useful datatypes
 -- | Simple sum type to mark whether quote is a note/highlight.
@@ -21,6 +24,7 @@ data Quote = Quote
   , book     :: T.Text
   , noteType :: NoteType
   , quote    :: T.Text
+  , datetime :: C.LocalTime
   } deriving (Show, Eq)
 
 -- | Informative quote type that associates notes with highlights properly.
@@ -29,11 +33,12 @@ data AnnotatedQuote = AQuote
   , aBook   :: T.Text
   , aQuote  :: T.Text
   , aNote   :: Maybe T.Text
+  , aDateTime :: C.LocalTime
   } deriving (Show)
 
 -- | Get Valid Quotes from Raw file data.
 rawToAQuotes :: T.Text -> [AnnotatedQuote]
-rawToAQuotes = filter filterAQuote . quotesToAQuotes . rawToQuotes
+rawToAQuotes = quotesToAQuotes . rawToQuotes
 
 rawToQuotes :: T.Text -> [Quote]
 rawToQuotes = mapMaybe parseRawQuote . T.splitOn delim
@@ -43,9 +48,9 @@ rawToQuotes = mapMaybe parseRawQuote . T.splitOn delim
 -- | Conversion function between quote types.
 quotesToAQuotes :: [Quote] -> [AnnotatedQuote]
 quotesToAQuotes [] = []
-quotesToAQuotes (Quote auth bk Highlight qte : Quote _ _ Note note: xs) =
-  AQuote auth bk qte (Just note) : quotesToAQuotes xs
-quotesToAQuotes (Quote a b _ q : xs) = AQuote a b q Nothing : quotesToAQuotes xs
+quotesToAQuotes (Quote auth bk Highlight qte dte : Quote _ _ Note note _: xs) =
+  AQuote auth bk qte (Just note) dte : quotesToAQuotes xs
+quotesToAQuotes (Quote a b _ q d: xs) = AQuote a b q Nothing d : quotesToAQuotes xs
 
 -- | Parse Quote from file text.
 parseRawQuote :: T.Text -> Maybe Quote
@@ -59,7 +64,37 @@ parseRawQuote str = do
     , book = getBook fstLine
     , noteType = getNoteType sndLine
     , quote = getQuote
+    , datetime = getDateTime sndLine
     }
+
+-- | Parse datetime
+getDateTime :: T.Text -> C.LocalTime
+getDateTime txt = C.LocalTime date time
+  where
+    timeTxt = T.words . T.takeWhileEnd (`notElem` [',']) $ txt
+    date = fromMaybe (C.fromGregorian 2024 C.October 7  ) $ do
+        day <- timeTxt !? 0 >>= tRead
+        month <- timeTxt !? 1 >>= monthParse
+        year <- timeTxt !? 2 >>= tRead
+
+        return $ C.fromGregorian year month day
+    time = fromMaybe C.midnight $ timeTxt !? 3 >>= tRead
+    tRead :: Read a => T.Text -> Maybe a
+    tRead = readMaybe . T.unpack
+    monthParse :: T.Text -> Maybe C.MonthOfYear
+    monthParse "January" = Just C.January
+    monthParse "February" = Just C.February
+    monthParse "March" = Just C.March
+    monthParse "April" = Just C.April
+    monthParse "May" = Just C.May
+    monthParse "June" = Just C.June
+    monthParse "July" = Just C.July
+    monthParse "August" = Just C.August
+    monthParse "September" = Just C.September
+    monthParse "October" = Just C.October
+    monthParse "November" = Just C.November
+    monthParse "December" = Just C.December
+    monthParse _ = Nothing
 
 getNoteType :: T.Text -> NoteType
 getNoteType txt
@@ -85,13 +120,3 @@ getBook :: T.Text -> T.Text
 getBook = dropSideNonLetters
   . T.takeWhile (not . isParenthesis)
   . T.dropWhile (not . isLetter)
-
-filterAQuote :: AnnotatedQuote -> Bool
-filterAQuote AQuote
-  { aAuthor = a
-  , aQuote = q
-  } = p1 && p2 && p3
-  where
-    p1 = maybe False (isPunctuation . snd) $ T.unsnoc q
-    p2 = all (`notElem` T.words a) ["Kenneth", "Fred"]
-    p3 = length (T.words q) > 1

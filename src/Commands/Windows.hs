@@ -10,7 +10,7 @@ module Commands.Windows
 import Control.Monad.Reader ( ReaderT, MonadIO )
 
 import qualified Clippings as C
-import UsefulFunctions (Env)
+import App(Env)
 -- import Foreign.C (CString)
 
 createImageFile
