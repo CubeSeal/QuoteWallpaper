@@ -73,9 +73,9 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "1920x1080"
     <|> "xc:transparent"
     <|> "-font"
-    <|> "\"EB-Garamond-12-Regular\""
+    <|> "\"EB-Garamond-Regular\""
     <|> "-pointsize"
-    <|> "50"
+    <|> "40"
     <|> "-fill"
     <|> "black"
     <|> "-draw"
@@ -91,18 +91,20 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-blur"
     <|> "0x0"
     <|> "-font"
-    <|> "EB-Garamond-12-Regular"
+    <|> "EB-Garamond-Regular"
     <|> "-fill"
     <|> "white"
     <|> "-pointsize"
-    <|> "50"
+    <|> "40"
     <|> "-annotate"
     <|> "+0+0"
     <|> ("\'" <> quoteStr <> "\'")
     <|> "\\)"
 
     <|> "-font"
-    <|> "EB-Garamond-08-Italic"
+    <|> "EB-Garamond-Italic"
+    <|> "-pointsize"
+    <|> "20"
     <|> noteStr
 
     <|> outDir
