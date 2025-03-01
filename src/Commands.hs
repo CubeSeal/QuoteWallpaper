@@ -17,7 +17,7 @@ import Control.Monad (unless)
 
 import Clippings (AnnotatedQuote (..))
 import UsefulFunctions (getISODate)
-import App(Env(..))
+import App(Env(..), App(..))
 import Data.List (isInfixOf)
 import System.Process ( callProcess ) 
 
@@ -31,7 +31,7 @@ import qualified Clippings as C
 import qualified DalleDownload as O
 
 -- | Download image file and save to state directory. Returns relative filepath.
-downloadImageFile :: MonadIO m => C.AnnotatedQuote -> ReaderT Env m FilePath
+downloadImageFile :: C.AnnotatedQuote -> App FilePath
 downloadImageFile ranQuote = do
   date <- getISODate
   Env dir apiKey <- ask
