@@ -27,3 +27,13 @@ toApiKey :: String -> ApiKey
 toApiKey = ApiKey . T.replace "\n" mempty . T.pack 
 
 data App a = forall m. MonadIO m => App {runApp :: ReaderT Env m a}
+
+instance Functor App where
+  fmap f (App m) = App (fmap f m)
+
+instance Applicative App where
+  pure a = App (pure a)
+  App f <*> App a = App (f <*> a)
+
+instance Monad App where
+
