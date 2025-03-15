@@ -44,16 +44,27 @@ fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey -> m URL
 fetchDalle3 C.AQuote {..} apiKey =
   runReq defaultHttpConfig $ do
     let
+      infixl 5 <|>
+      (<|>) x y = x <> " " <> y
       bearerMsg = "Bearer " <> toStrict (encodeUtf8 $ fromApiKey apiKey)
+      commentaryStr = case aNote of
+        Just str -> ". And my note:" <|> str
+        Nothing -> mempty 
       testMessage = OpenAiJsonQuery
         "dall-e-3"
         ( "Draw a picture inspired by the following quote:"
-        <> "\""
-        <> aQuote
-        <> "\"."
-        <> "For no cases, include the quote text in the picture and think carefully,"
-        <> " making sure you use context and subtext to find the true meaning of the quote."
-        <> "Make sure the picture and its art-style fully embody the quote."
+        <|> "\""
+        <|> aQuote
+        <|> "\"."
+        <|> "Please think carefully and take your time with generating this image."
+        <|> "Make sure you don't accidentally put the text of the quote in the picture."
+        <|> "Ensure that your picture fully embodies the meaning of the quote in terms of"
+        <|> " artstyle and themes, taking into account subtext and hidden meaning."
+        <|> "To help you I'll give you the author as well:"
+        <|> aAuthor
+        <|> ", the text which the quote is sourced from:"
+        <|> aBook
+        <|> commentaryStr
         )
         1
         "1024x1024"

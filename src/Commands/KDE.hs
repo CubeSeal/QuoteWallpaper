@@ -7,7 +7,6 @@ module Commands.KDE
   ) where
 
 -- Modules
--- Modules
 import System.Process (callProcess, callCommand)
 import Control.Monad.Reader
   ( ReaderT
@@ -104,7 +103,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-font"
     <|> "EB-Garamond-Italic"
     <|> "-pointsize"
-    <|> "20"
+    <|> "40"
     <|> noteStr
 
     <|> outDir
