@@ -68,7 +68,7 @@ getRanQuote quotes = liftIO $ do
   print ranQuote
   return ranQuote
 
-filterAQuote :: C.AnnotatedQuote -> IO Bool
+filterAQuote :: MonadIO m => C.AnnotatedQuote -> m Bool
 filterAQuote C.AQuote
   { C.aAuthor = a
   , C.aQuote = q

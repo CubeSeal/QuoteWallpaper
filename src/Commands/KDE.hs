@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Commands.KDE
   ( setWallpaper
@@ -9,8 +10,7 @@ module Commands.KDE
 -- Modules
 import System.Process (callProcess, callCommand)
 import Control.Monad.Reader
-  ( ReaderT
-  , MonadReader (ask)
+  ( MonadReader (ask)
   , MonadIO (liftIO)
   )
 
@@ -22,7 +22,7 @@ import App(Env(..))
 import qualified Clippings as C
 
 -- | Set Wallpaper
-setWallpaper :: MonadIO m => FilePath -> ReaderT Env m ()
+setWallpaper :: (MonadIO m, MonadReader Env m) => FilePath -> m ()
 setWallpaper fp = do
   Env dir _ <- ask
   let picDir = dir ++ "outfiles/" ++ fp
@@ -30,10 +30,10 @@ setWallpaper fp = do
 
 -- | Make image file
 createImageFile
-  :: MonadIO m
+  :: (MonadIO m, MonadReader Env m)
   => FilePath
   -> C.AnnotatedQuote
-  -> ReaderT Env m FilePath
+  -> m FilePath
 createImageFile inImgFile C.AQuote {..} = do
   Env dir _ <- ask
   date <- getISODate

@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Commands
   ( downloadImageFile
@@ -9,9 +10,8 @@ module Commands
   ) where
 
 import Control.Monad.Reader
-  ( ReaderT
-  , MonadReader (ask)
-  , MonadIO (liftIO)
+  ( MonadReader (ask)
+  , MonadIO (liftIO), asks
   )
 import Control.Monad (unless)
 
@@ -19,7 +19,7 @@ import Clippings (AnnotatedQuote (..))
 import UsefulFunctions (getISODate)
 import App(Env(..))
 import Data.List (isInfixOf)
-import System.Process ( callProcess ) 
+import System.Process ( callProcess )
 
 import qualified System.Directory as D
 import qualified System.Info as I
@@ -31,7 +31,7 @@ import qualified Clippings as C
 import qualified DalleDownload as O
 
 -- | Download image file and save to state directory. Returns relative filepath.
-downloadImageFile :: MonadIO m => C.AnnotatedQuote -> ReaderT Env m FilePath
+downloadImageFile :: (MonadIO m, MonadReader Env m) => C.AnnotatedQuote -> m FilePath
 downloadImageFile ranQuote = do
   date <- getISODate
   Env dir apiKey <- ask
@@ -49,7 +49,7 @@ downloadImageFile ranQuote = do
   return imgFile
 
 -- | Take image file and add the quote to it.
-createImageFile :: MonadIO m => FilePath -> AnnotatedQuote -> ReaderT Env m FilePath
+createImageFile :: (MonadIO m, MonadReader Env m) => FilePath -> AnnotatedQuote -> m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
   case I.os of
@@ -58,15 +58,15 @@ createImageFile inFile quote = do
     _ -> undefined --TODO: Add default behaviour.
 
 -- | Set wallpaper.
-setWallpaper :: MonadIO m => FilePath -> ReaderT Env m ()
+setWallpaper :: (MonadIO m, MonadReader Env m) => FilePath -> m ()
 setWallpaper q = if I.os == "mingw32"
   then undefined
   else KDE.setWallpaper q
 
 -- | Clean directory of extra/junk files.
-cleanDir :: MonadIO m => ReaderT FilePath m ()
+cleanDir :: (MonadIO m, MonadReader Env m) => m ()
 cleanDir = do
-  dir <- ask
+  dir <- asks directory
   listOfFiles <- liftIO $ D.listDirectory dir
   date <- getISODate
 
