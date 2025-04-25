@@ -8,10 +8,20 @@ module DalleDownload
   ) where
 
 -- Modules
-import Data.Text.Lazy.Encoding (encodeUtf8)
-import Data.ByteString.Lazy (toStrict)
+import Data.Text.Encoding (encodeUtf8)
 import Control.Monad.Reader (MonadIO)
-import Network.HTTP.Req (runReq, defaultHttpConfig, POST (POST), (/:), jsonResponse, ReqBodyJson (ReqBodyJson), https, req, responseBody, header)
+import Network.HTTP.Req
+  ( runReq
+  , defaultHttpConfig
+  , POST (POST)
+  , (/:)
+  , jsonResponse
+  , ReqBodyJson (ReqBodyJson)
+  , https
+  , req
+  , responseBody
+  , header
+  )
 import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
 import Data.Vector ((!?))
@@ -21,11 +31,34 @@ import App (ApiKey (fromApiKey))
 import qualified Data.Text.Lazy as T
 import qualified Data.Aeson as H
 import qualified Data.Aeson.KeyMap as H
+import qualified Data.ByteString.Base64 as B64
+import qualified Data.ByteString as BS
 
 import qualified Clippings as C
 
 -- Types
-type URL = T.Text
+type Bytes = BS.ByteString
+
+-- | Quality of the image.
+data Quality = Low | Medium | High
+    deriving (Generic)
+
+-- | Manual show instance for lower case prints.
+instance Show Quality where
+  show Low = "low"
+  show Medium = "medium"
+  show High = "high"
+
+instance H.ToJSON Quality where
+    toJSON Low = H.String "low"
+    toJSON Medium = H.String "medium"
+    toJSON High = H.String "high"
+
+instance H.FromJSON Quality where
+    parseJSON (H.String "low") = return Low
+    parseJSON (H.String "medium") = return Medium
+    parseJSON (H.String "high") = return High
+    parseJSON _ = fail "Invalid quality value"
 
 -- | JSON format OpenAi API wants to receive info in.
 data OpenAiJsonQuery = OpenAiJsonQuery
@@ -33,6 +66,7 @@ data OpenAiJsonQuery = OpenAiJsonQuery
   , prompt :: T.Text
   , n :: Int
   , size :: T.Text
+  , quality :: Quality
   } deriving (Show, Generic)
 
 instance H.ToJSON OpenAiJsonQuery
@@ -40,18 +74,17 @@ instance H.FromJSON OpenAiJsonQuery
 
 -- Functions
 -- | Generate Dalle3 Image and return URL
-fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey -> m URL
+fetchDalle3 :: MonadIO m => C.AnnotatedQuote -> ApiKey -> m Bytes
 fetchDalle3 C.AQuote {..} apiKey =
   runReq defaultHttpConfig $ do
     let
       infixl 5 <|>
       (<|>) x y = x <> " " <> y
-      bearerMsg = "Bearer " <> toStrict (encodeUtf8 $ fromApiKey apiKey)
-      commentaryStr = case aNote of
-        Just str -> ". And my note:" <|> str
-        Nothing -> mempty 
+      bearerMsg = "Bearer " <> (encodeUtf8 . T.toStrict . fromApiKey) apiKey
+      commentaryStr (Just str) = " And my note:" <|> str
+      commentaryStr _ = mempty
       testMessage = OpenAiJsonQuery
-        "dall-e-3"
+        "gpt-image-1"
         ( "Draw a picture inspired by the following quote:"
         <|> "\""
         <|> aQuote
@@ -64,10 +97,11 @@ fetchDalle3 C.AQuote {..} apiKey =
         <|> aAuthor
         <|> ", the text which the quote is sourced from:"
         <|> aBook
-        <|> commentaryStr
+        <|> commentaryStr aNote
         )
         1
         "1024x1024"
+        Medium
       url = https "api.openai.com" /: "v1" /: "images" /: "generations"
       params = header "Content-Type" "application/json"
         <> header "Authorization" bearerMsg
@@ -75,13 +109,13 @@ fetchDalle3 C.AQuote {..} apiKey =
     _jsonResponse <- req POST url (ReqBodyJson testMessage) jsonResponse params
     return $ fromMaybe undefined $ extractURL $ responseBody _jsonResponse
 
-extractURL :: H.Value -> Maybe URL
+extractURL :: H.Value -> Maybe Bytes
 extractURL val = do
   (H.String url)
     <- objExtract "data" val
     >>= arrayExtract 0
-    >>= objExtract "url"
-  return $ T.fromStrict url
+    >>= objExtract "b64_json"
+  return $ B64.decodeLenient $ encodeUtf8 url
 
 -- Helper functions for JSON extraction:
 

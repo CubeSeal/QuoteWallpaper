@@ -30,6 +30,7 @@ common common-dependencies
     build-depends:    base >=4.14.3.0,
                       text,
                       bytestring,
+                      base64-bytestring,
                       time,
                       process,
                       req,

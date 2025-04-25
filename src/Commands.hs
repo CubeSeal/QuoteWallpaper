@@ -19,10 +19,10 @@ import Clippings (AnnotatedQuote (..))
 import UsefulFunctions (getISODate)
 import App(Env(..))
 import Data.List (isInfixOf)
-import System.Process ( callProcess )
 
 import qualified System.Directory as D
 import qualified System.Info as I
+import qualified Data.ByteString as B
 
 import qualified Commands.KDE as KDE
 import qualified Commands.Windows as WIN
@@ -36,15 +36,14 @@ downloadImageFile ranQuote = do
   date <- getISODate
   Env dir apiKey <- ask
   let
-    command = if I.os == "mingw32" then "-OutFile" else "--output-document="
-    imgFile = date ++ ".jpg"
+    imgFile = date ++ ".png"
     fullPathImgFile = dir ++ "infiles/" ++ imgFile
 
   doesRawImgFileExist <- liftIO $ D.doesFileExist fullPathImgFile
 
   unless doesRawImgFileExist $ do
-    url <- O.fetchDalle3 ranQuote apiKey
-    liftIO $ callProcess "wget" [command ++ fullPathImgFile, T.unpack url]
+    bytes <- O.fetchDalle3 ranQuote apiKey
+    liftIO $ B.writeFile fullPathImgFile bytes
 
   return imgFile
 
