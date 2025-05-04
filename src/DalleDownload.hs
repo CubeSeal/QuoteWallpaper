@@ -57,9 +57,10 @@ fetchDalle3 C.AQuote {..} apiKey =
         <|> aQuote
         <|> "\"."
         <|> "Please think carefully and take your time with generating this image."
-        <|> "Make sure you don't accidentally put the text of the quote in the picture."
+        <|> "It is *critical* that you don't accidentally insert any text into the image"
+        <|> "OR anything that looks like text."
         <|> "Ensure that your picture fully embodies the meaning of the quote in terms of"
-        <|> " artstyle and themes, taking into account subtext and hidden meaning."
+        <|> "artstyle and themes, taking into account subtext and hidden meaning."
         <|> "To help you I'll give you the author as well:"
         <|> aAuthor
         <|> ", the text which the quote is sourced from:"
@@ -67,7 +68,7 @@ fetchDalle3 C.AQuote {..} apiKey =
         <|> commentaryStr
         )
         1
-        "1024x1024"
+        "1792x1024"
       url = https "api.openai.com" /: "v1" /: "images" /: "generations"
       params = header "Content-Type" "application/json"
         <> header "Authorization" bearerMsg

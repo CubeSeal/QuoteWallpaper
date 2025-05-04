@@ -72,18 +72,18 @@ filterAQuote :: MonadIO m => C.AnnotatedQuote -> m Bool
 filterAQuote C.AQuote
   { C.aAuthor = a
   , C.aQuote = q
-  , C.aDateTime = DT.LocalTime day _
+  -- , C.aDateTime = DT.LocalTime day _
   } = do
-  today <- getDay
+  -- today <- getDay
   let
     p1 = maybe False (isPunctuation . snd) $ T.unsnoc q
     p2 = all (`notElem` T.words a) ["Kenneth", "Fred"]
     p3 = length (T.words q) > 1
-    p4 = today `DT.diffDays` day <= 1000
+    -- p4 = today `DT.diffDays` day <= 1000
   
   pure $ and
     [ p1
     , p2
     , p3
-    , p4
+    -- , p4
     ]
