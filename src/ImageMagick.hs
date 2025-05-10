@@ -8,7 +8,7 @@ module ImageMagick
 
 -- Modules
 import Foreign.C.String   (CString, withCString)
-import Foreign.C.Types    (CSize(..), CUInt(..))
+import Foreign.C.Types    (CUInt(..))
 import Foreign.Ptr        (Ptr, nullPtr, FunPtr, castFunPtr)
 import Foreign.ForeignPtr (ForeignPtr, newForeignPtr, withForeignPtr)
 
@@ -19,7 +19,6 @@ import qualified Clippings as C
 -- Left Error Type
 data ImageMagickError =
   NullPtrError
-  | NoImageDimensionsError
   | ReadFileFailure
   | OtherError String
 
@@ -55,21 +54,6 @@ foreign import ccall safe "&DestroyMagickWand"
 -- MagickBooleanType MagickReadImage(MagickWand *wand, const char *filename);
 foreign import ccall safe "MagickReadImage"
   c_magickReadImage :: Ptr CMagickWand -> CString -> IO MagickBooleanType
-
--- size_t MagickGetImageWidth(MagickWand *wand);
-foreign import ccall safe "MagickGetImageWidth"
-  c_magickGetImageWidth :: Ptr CMagickWand -> IO CSize
-
--- size_t MagickGetImageHeight(MagickWand *wand);
-foreign import ccall safe "MagickGetImageHeight"
-  c_magickGetImageHeight :: Ptr CMagickWand -> IO CSize
-
--- char *MagickGetException(const MagickWand *wand, ExceptionType *severity);
--- For simplicity, we won't use this directly for detailed error messages,
--- but it's good to be aware of. We'd need to define ExceptionType too.
--- foreign import ccall unsafe "MagickGetException"
---   c_magickGetException :: Ptr CMagickWand -> Ptr CInt -> IO CString
-
 
 -- --- Haskell Wrappers ---
 
