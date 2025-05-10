@@ -38,6 +38,7 @@ common common-dependencies
                       directory,
                       mtl,
                       random
+    pkgconfig-depends:  MagickWand >= 6
 
 library
     import:           optimisation, common-dependencies
@@ -51,7 +52,8 @@ library
                       WikimediaAPI,
                       UsefulFunctions,
                       DalleDownload,
-                      App
+                      App,
+                      ImageMagick
 
     -- other-extensions:
     hs-source-dirs:   src
