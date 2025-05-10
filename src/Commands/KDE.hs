@@ -40,6 +40,7 @@ createImageFile inImgFile C.AQuote {..} = do
   let
     infixl 5 <|>
     (<|>) x y = x <> " " <> y
+    font_size = 35 :: Integer
     picDir   = dir ++ "infiles/" ++ inImgFile
     outFile  = "out-" ++ date ++ ".jpg"
     outDir   = dir ++ "outfiles/" ++ outFile
@@ -74,7 +75,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-font"
     <|> "\"EB-Garamond-Regular\""
     <|> "-pointsize"
-    <|> "40"
+    <|> show font_size
     <|> "-fill"
     <|> "black"
     <|> "-draw"
@@ -94,7 +95,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-fill"
     <|> "white"
     <|> "-pointsize"
-    <|> "40"
+    <|> show font_size
     <|> "-annotate"
     <|> "+0+0"
     <|> ("\'" <> quoteStr <> "\'")
@@ -103,7 +104,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-font"
     <|> "EB-Garamond-Italic"
     <|> "-pointsize"
-    <|> "40"
+    <|> show font_size
     <|> noteStr
 
     <|> outDir
