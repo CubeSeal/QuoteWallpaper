@@ -28,6 +28,22 @@ setWallpaper fp = do
   let picDir = dir ++ "outfiles/" ++ fp
   liftIO $ callProcess "plasma-apply-wallpaperimage" [picDir]
 
+-- | Escape quotes
+quoteEscape :: Bool -> T.Text -> T.Text
+quoteEscape handleSingleQuote txt = foldl (\t (o, n) -> T.replace o n t) txt replaceList2
+  where
+    replaceList =
+      [ ("\\", "\\\\")
+      , ("\"", "\\\"")
+      , ("$", "\\$")
+      , ("`", "\\`")
+      , ("$", "\\$")
+      ]
+    replaceList2 = replaceList <>
+      if handleSingleQuote
+        then [("'", "'\\\''")]
+        else [("'", "\\\'")]
+
 -- | Make image file
 createImageFile
   :: (MonadIO m, MonadReader Env m)
@@ -44,13 +60,13 @@ createImageFile inImgFile C.AQuote {..} = do
     picDir   = dir ++ "infiles/" ++ inImgFile
     outFile  = "out-" ++ date ++ ".jpg"
     outDir   = dir ++ "outfiles/" ++ outFile
-    quoteStr = T.unpack
-      $ T.replace "\"" "\\\"" aQuote
+    quoteStr =
+      aQuote
       <> "\n\n— "
       <> aAuthor
-      <> " \\("
+      <> " ("
       <> aBook
-      <> "\\)"
+      <> ")"
       <> "\n"
     noteStr = T.unpack $
       case aNote of
@@ -81,7 +97,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-draw"
     <|> "\"text"
     <|> "0,0"
-    <|> ("\'" <> quoteStr <> "\'" <> "\"")
+    <|> ("\'" <> T.unpack (quoteEscape False quoteStr) <> "\'" <> "\"")
     <|> "-blur"
     <|> "0x4"
     <|> "\\)"
@@ -98,7 +114,7 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> show font_size
     <|> "-annotate"
     <|> "+0+0"
-    <|> ("\'" <> quoteStr <> "\'")
+    <|> ("\'" <> T.unpack (quoteEscape True quoteStr)  <> "\'")
     <|> "\\)"
 
     <|> "-font"
