@@ -48,9 +48,9 @@ createImageFile inImgFile C.AQuote {..} = do
       $ T.replace "\"" "\\\"" aQuote
       <> "\n\n— "
       <> aAuthor
-      <> " ("
+      <> " \\("
       <> aBook
-      <> ")"
+      <> "\\)"
       <> "\n"
     noteStr = T.unpack $
       case aNote of
