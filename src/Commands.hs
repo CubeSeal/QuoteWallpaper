@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Commands
   ( downloadImageFile
@@ -13,6 +14,7 @@ import Control.Monad.Reader
   ( MonadReader (ask)
   , MonadIO (liftIO), asks
   )
+import Control.Monad.Except (runExceptT)
 import Control.Monad (unless)
 
 import Clippings (AnnotatedQuote (..))
@@ -29,6 +31,8 @@ import qualified Commands.Windows as WIN
 import qualified Data.Text.Lazy as T
 import qualified Clippings as C
 import qualified DalleDownload as O
+import qualified ImageMagick as M
+import Control.Exception (throwIO)
 
 -- | Download image file and save to state directory. Returns relative filepath.
 downloadImageFile :: (MonadIO m, MonadReader Env m) => C.AnnotatedQuote -> m FilePath
@@ -51,11 +55,27 @@ downloadImageFile ranQuote = do
 -- | Take image file and add the quote to it.
 createImageFile :: (MonadIO m, MonadReader Env m) => FilePath -> AnnotatedQuote -> m FilePath
 createImageFile inFile quote = do
-  let formattedQuote = formatQuote quote
-  case I.os of
-    "mingw32" -> WIN.createImageFile inFile formattedQuote
-    "linux" -> KDE.createImageFile inFile formattedQuote
-    _ -> undefined --TODO: Add default behaviour.
+  Env dir _ <- ask
+  date <- getISODate
+  let
+    formattedQuote = formatQuote quote
+    inDir = dir <> "infiles/" <> inFile
+    outFile = "out-" <> date <> ".jpg"
+    outDir = dir <> "outfiles/" <> outFile
+      
+  either_result <- runExceptT $ M.addQuoteToImage formattedQuote inDir outDir
+
+  case either_result of
+    Left err -> do
+      liftIO $ throwIO (userError $ show err) -- Throw the IO exception
+    Right _ -> return ()
+
+  pure outFile
+  
+  -- case I.os of
+  --   "mingw32" -> WIN.createImageFile inFile formattedQuote
+  --   "linux" -> KDE.createImageFile inFile formattedQuote
+  --   _ -> undefined --TODO: Add default behaviour.
 
 -- | Set wallpaper.
 setWallpaper :: (MonadIO m, MonadReader Env m) => FilePath -> m ()
