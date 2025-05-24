@@ -13,6 +13,7 @@ import Control.Monad.Reader
   ( MonadReader (ask)
   , MonadIO (liftIO)
   )
+import Data.List (foldl')
 
 import qualified Data.Text.Lazy as T
 
@@ -30,7 +31,7 @@ setWallpaper fp = do
 
 -- | Escape quotes
 quoteEscape :: Bool -> T.Text -> T.Text
-quoteEscape handleSingleQuote txt = foldl (\t (o, n) -> T.replace o n t) txt replaceList2
+quoteEscape handleSingleQuote txt = foldl' (\t (o, n) -> T.replace o n t) txt replaceList2
   where
     replaceList =
       [ ("\\", "\\\\")
