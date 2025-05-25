@@ -100,9 +100,9 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "0,0"
     <|> ("\'" <> T.unpack (quoteEscape False quoteStr) <> "\'" <> "\"")
     <|> "-blur"
-    <|> "0x4"
+    <|> "0x2"
     <|> "\\)"
-    <|> "-geometry +5+5 -composite"
+    <|> "-geometry +3+3 -composite"
 
     <|> "\\("
     <|> "-blur"
