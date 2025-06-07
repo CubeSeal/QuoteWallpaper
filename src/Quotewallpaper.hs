@@ -4,7 +4,8 @@
 module Quotewallpaper where
 
 -- Modules
-import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO, filterM)
+import Control.Monad (filterM)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadIO, liftIO)
 import Data.Maybe (fromMaybe)
 import Data.Foldable (traverse_)
 import Data.Char (isPunctuation)

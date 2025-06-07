@@ -48,6 +48,7 @@ library
                       Commands,
                       Commands.KDE,
                       Commands.Windows,
+                      Commands.Hyprland,
                       WikimediaAPI,
                       UsefulFunctions,
                       DalleDownload,

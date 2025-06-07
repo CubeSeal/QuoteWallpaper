@@ -26,6 +26,7 @@ import qualified System.Info as I
 
 import qualified Commands.KDE as KDE
 import qualified Commands.Windows as WIN
+import qualified Commands.Hyprland as HYPR
 import qualified Data.Text.Lazy as T
 import qualified Clippings as C
 import qualified DalleDownload as O
@@ -52,16 +53,19 @@ downloadImageFile ranQuote = do
 createImageFile :: (MonadIO m, MonadReader Env m) => FilePath -> AnnotatedQuote -> m FilePath
 createImageFile inFile quote = do
   let formattedQuote = formatQuote quote
+  liftIO $ print I.os
   case I.os of
     "mingw32" -> WIN.createImageFile inFile formattedQuote
-    "linux" -> KDE.createImageFile inFile formattedQuote
+    "linux" -> HYPR.createImageFile inFile formattedQuote
+    "kde" -> KDE.createImageFile inFile formattedQuote
     _ -> undefined --TODO: Add default behaviour.
 
 -- | Set wallpaper.
 setWallpaper :: (MonadIO m, MonadReader Env m) => FilePath -> m ()
-setWallpaper q = if I.os == "mingw32"
-  then undefined
-  else KDE.setWallpaper q
+setWallpaper q = do
+  case I.os of 
+    "linux" -> HYPR.setWallpaper q
+    _ -> undefined
 
 -- | Clean directory of extra/junk files.
 cleanDir :: (MonadIO m, MonadReader Env m) => m ()
