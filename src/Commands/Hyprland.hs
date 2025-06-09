@@ -60,10 +60,12 @@ createImageFile inImgFile C.AQuote {..} = do
   let
     infixl 5 <|>
     (<|>) x y = x <> " " <> y
-    font_size = 35 :: Integer
-    picDir   = dir ++ "infiles/" ++ inImgFile
-    outFile  = "out-" ++ date ++ ".jpg"
-    outDir   = dir ++ "outfiles/" ++ outFile
+    font = "EB-Garamond-12-Regular"
+    fontItalic = "EB-Garamond-08-Italic"
+    fontSize = 35 :: Integer
+    picDir   = dir <> "infiles/" <> inImgFile
+    outFile  = "out-" <> date <> ".jpg"
+    outDir   = dir <> "outfiles/" <> outFile
     quoteStr =
       aQuote
       <> "\n\n— "
@@ -93,9 +95,9 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "1920x1080"
     <|> "xc:transparent"
     <|> "-font"
-    <|> "\"Atkinson-Hyperlegible-Next-Regular\""
+    <|> font
     <|> "-pointsize"
-    <|> show font_size
+    <|> show fontSize
     <|> "-fill"
     <|> "black"
     <|> "-draw"
@@ -111,20 +113,20 @@ createImageFile inImgFile C.AQuote {..} = do
     <|> "-blur"
     <|> "0x0"
     <|> "-font"
-    <|> "Atkinson-Hyperlegible-Next-Regular"
+    <|> font
     <|> "-fill"
     <|> "white"
     <|> "-pointsize"
-    <|> show font_size
+    <|> show fontSize
     <|> "-annotate"
     <|> "+0+0"
     <|> ("\'" <> T.unpack (quoteEscape True quoteStr)  <> "\'")
     <|> "\\)"
 
     <|> "-font"
-    <|> "Atkinson-Hyperlegible-Next-Italic"
+    <|> fontItalic
     <|> "-pointsize"
-    <|> show font_size
+    <|> show fontSize
     <|> noteStr
 
     <|> outDir
