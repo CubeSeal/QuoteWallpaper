@@ -28,10 +28,8 @@ setWallpaper fp = do
   Env dir _ <- ask
   let
     picDir = dir ++ "outfiles/" ++ fp
-    hyprctlPreloadCmd = "hyprctl hyprpaper preload " <> "\"" <> picDir <> "\""
-    hyprctlCmd = "hyprctl hyprpaper wallpaper " <> "\"," <> picDir <> "\""
+    hyprctlCmd = "hyprctl hyprpaper reload " <> "\"," <> picDir <> "\""
   
-  liftIO $ callCommand $ traceShowId hyprctlPreloadCmd
   liftIO $ callCommand $ traceShowId hyprctlCmd
 
 -- | Escape quotes
